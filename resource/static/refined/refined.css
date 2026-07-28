@@ -9,19 +9,19 @@
 
 :root {
   color-scheme: light;
-  --nz-canvas: #f5f7f6;
-  --nz-canvas-strong: #edf2ef;
+  --nz-canvas: #f7f7f7;
+  --nz-canvas-strong: #f2f2f2;
   --nz-surface: #ffffff;
   --nz-surface-raised: #ffffff;
-  --nz-surface-soft: #f0f4f2;
-  --nz-text: #24312e;
-  --nz-text-soft: #65726e;
-  --nz-text-faint: #89938f;
-  --nz-border: #e2e8e5;
-  --nz-border-strong: #d4ddd9;
-  --nz-accent: #4c786e;
-  --nz-accent-hover: #3f675f;
-  --nz-accent-soft: #e7f0ed;
+  --nz-surface-soft: #f7f7f7;
+  --nz-text: #222222;
+  --nz-text-soft: #6a6a6a;
+  --nz-text-faint: #8f8f8f;
+  --nz-border: #e7e7e7;
+  --nz-border-strong: #d5d5d5;
+  --nz-accent: #526c64;
+  --nz-accent-hover: #3f5750;
+  --nz-accent-soft: #edf3f1;
   --nz-info: #52769f;
   --nz-info-soft: #e9eff6;
   --nz-success: #477b58;
@@ -31,13 +31,13 @@
   --nz-danger: #ae5151;
   --nz-danger-soft: #f8eaea;
   --nz-offline: #64716c;
-  --nz-shadow-sm: 0 1px 2px rgba(22, 34, 30, 0.05);
-  --nz-shadow-md: 0 10px 28px rgba(22, 34, 30, 0.06);
-  --nz-shadow-lg: 0 20px 48px rgba(22, 34, 30, 0.12);
+  --nz-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.035);
+  --nz-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.055);
+  --nz-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.11);
   --nz-radius-sm: 8px;
   --nz-radius-md: 10px;
-  --nz-radius-lg: 14px;
-  --nz-radius-xl: 18px;
+  --nz-radius-lg: 12px;
+  --nz-radius-xl: 16px;
   --nz-ease: 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -81,10 +81,7 @@ body,
 html[nz-theme='dark'] body {
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at 12% -10%, rgba(76, 120, 110, 0.09), transparent 30rem),
-    radial-gradient(circle at 92% 6%, rgba(82, 118, 159, 0.07), transparent 28rem),
-    var(--nz-canvas) !important;
+  background: var(--nz-canvas) !important;
   color: var(--nz-text) !important;
   font-family:
     Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -131,14 +128,11 @@ html[nz-theme='dark'] :where(a, button, input, select, textarea, [tabindex]):foc
 
 .nb-menu.ui.menu,
 html[nz-theme='dark'] .nb-menu.ui.menu {
-  min-height: 64px;
+  min-height: 56px;
   border: 0 !important;
-  background: rgba(255, 255, 255, 0.88) !important;
-  box-shadow:
-    0 1px 0 var(--nz-border),
-    0 8px 24px rgba(22, 34, 30, 0.04) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
-  backdrop-filter: blur(18px) saturate(135%);
+  border-bottom: 1px solid var(--nz-border) !important;
+  background: var(--nz-surface) !important;
+  box-shadow: none !important;
 }
 
 html[nz-theme='dark'] .nb-menu.ui.menu {
@@ -146,7 +140,7 @@ html[nz-theme='dark'] .nb-menu.ui.menu {
 }
 
 .nb-menu > .ui.container {
-  width: min(1440px, calc(100% - 32px)) !important;
+  width: min(1440px, calc(100% - 24px)) !important;
   max-width: 1440px !important;
 }
 
@@ -157,11 +151,11 @@ html[nz-theme='dark'] .nb-menu.ui.menu * {
 }
 
 .nb-menu.ui.menu .item {
-  min-height: 44px;
-  margin: 10px 2px;
-  padding: 0 13px;
+  min-height: 40px;
+  margin: 8px 1px;
+  padding: 0 10px;
   border-radius: var(--nz-radius-md);
-  font-weight: 600;
+  font-weight: 560;
   transition:
     color var(--nz-ease),
     background-color var(--nz-ease),
@@ -197,11 +191,38 @@ html[nz-theme='dark'] .nb-menu.ui.menu * {
 }
 
 .nb-menu.ui.menu > .ui.container > a.item:first-child {
-  padding-inline: 8px;
+  padding-inline: 5px;
+}
+
+.nb-menu.ui.menu > .ui.container > a.item:first-child img {
+  display: none;
+}
+
+.nb-menu.ui.menu > .ui.container > a.item:first-child:after {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 1px solid var(--nz-border-strong);
+  border-radius: 50%;
+  background: #222222;
+  color: #ffffff;
+  content: 'O';
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  place-items: center;
+}
+
+html[nz-theme='dark'] .nb-menu.ui.menu > .ui.container > a.item:first-child:after {
+  border-color: #5d6663;
+  background: #f2f2f2;
+  color: #222222;
 }
 
 .nb-menu .right.menu > .item {
-  padding-inline: 6px;
+  padding-inline: 5px;
 }
 
 .nb-menu .ui.dropdown .menu,
@@ -209,8 +230,9 @@ html[nz-theme='dark'] .nb-menu .ui.dropdown .menu {
   overflow-x: hidden;
   overflow-y: auto;
   max-height: min(70vh, 480px);
-  margin-top: 7px !important;
-  padding: 6px !important;
+  min-width: 190px !important;
+  margin-top: 4px !important;
+  padding: 4px !important;
   border: 1px solid var(--nz-border) !important;
   border-radius: var(--nz-radius-lg) !important;
   background: var(--nz-surface-raised) !important;
@@ -218,18 +240,26 @@ html[nz-theme='dark'] .nb-menu .ui.dropdown .menu {
 }
 
 .nb-menu .ui.dropdown .menu > .item,
+.nb-menu.ui.menu .ui.simple.dropdown > .menu > .item,
 html[nz-theme='dark'] .nb-menu .ui.dropdown .menu > .item,
 html[nz-theme='dark'] .ui.menu .ui.dropdown .menu > .item {
-  min-height: 40px;
-  margin: 2px 0 !important;
-  padding: 10px 12px !important;
+  min-height: 34px;
+  margin: 1px 0 !important;
+  padding: 7px 9px !important;
   border-radius: var(--nz-radius-sm) !important;
   color: var(--nz-text) !important;
 }
 
-.nb-menu .ui.dropdown .menu > .item:hover {
+.nb-menu .ui.dropdown .menu > .item:hover,
+.nb-menu.ui.menu .ui.simple.dropdown > .menu > .item:hover {
   background: var(--nz-surface-soft) !important;
   color: var(--nz-accent) !important;
+}
+
+.nb-menu .ui.dropdown .menu > .item i.icon,
+.nb-menu.ui.menu .ui.simple.dropdown > .menu > .item i.icon {
+  width: 1em;
+  margin-right: 8px !important;
 }
 
 .nb-menu .ui.avatar.image {
@@ -243,14 +273,14 @@ html[nz-theme='dark'] .ui.menu .ui.dropdown .menu > .item {
 
 .nb-container {
   width: 100%;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 56px);
   margin: 0 !important;
-  padding: 88px 0 40px !important;
+  padding: 70px 0 24px !important;
 }
 
 .ui.container,
 .nb-container > .ui.container {
-  width: min(1440px, calc(100% - 32px)) !important;
+  width: min(1440px, calc(100% - 24px)) !important;
   max-width: 1440px !important;
 }
 
@@ -258,32 +288,175 @@ html[nz-theme='dark'] .ui.menu .ui.dropdown .menu > .item {
   color: var(--nz-text);
 }
 
+/* Calm first paint for the public dashboard */
+
+.nb-container > .ui.container {
+  transition: opacity 220ms ease;
+}
+
+html.refined-loading,
+html.refined-loading body {
+  overflow: hidden;
+}
+
+html.refined-loading #app {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.refined-page-loader {
+  position: fixed;
+  z-index: 2147483646;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0;
+  background: var(--nz-canvas);
+  color: var(--nz-text-soft);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 220ms ease,
+    visibility 220ms ease;
+}
+
+html.refined-loading .refined-page-loader {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.refined-page-loader.is-leaving {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.refined-typing-indicator {
+  position: relative;
+  isolation: isolate;
+  width: 64px;
+  height: 35px;
+}
+
+.refined-typing-circle {
+  position: absolute;
+  z-index: 1;
+  top: 20px;
+  left: 14%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nz-accent);
+  transform-origin: 50%;
+  animation: refined-typing-circle 0.56s alternate infinite ease;
+}
+
+.refined-typing-circle:nth-child(2) {
+  left: 44%;
+  animation-delay: 0.16s;
+}
+
+.refined-typing-circle:nth-child(3) {
+  right: 14%;
+  left: auto;
+  animation-delay: 0.28s;
+}
+
+.refined-typing-shadow {
+  position: absolute;
+  z-index: 0;
+  top: 31px;
+  left: 14%;
+  width: 6px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(34, 34, 34, 0.16);
+  filter: blur(1px);
+  transform-origin: 50%;
+  animation: refined-typing-shadow 0.56s alternate infinite ease;
+}
+
+html[nz-theme='dark'] .refined-typing-shadow {
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.refined-typing-shadow:nth-child(5) {
+  left: 44%;
+  animation-delay: 0.16s;
+}
+
+.refined-typing-shadow:nth-child(6) {
+  right: 14%;
+  left: auto;
+  animation-delay: 0.28s;
+}
+
+@keyframes refined-typing-circle {
+  0% {
+    top: 20px;
+    height: 5px;
+    border-radius: 50px 50px 25px 25px;
+    transform: scaleX(1.55);
+  }
+
+  40% {
+    height: 8px;
+    border-radius: 50%;
+    transform: scaleX(1);
+  }
+
+  100% {
+    top: 1px;
+  }
+}
+
+@keyframes refined-typing-shadow {
+  0% {
+    opacity: 0.65;
+    transform: scaleX(1.45);
+  }
+
+  40% {
+    opacity: 0.5;
+    transform: scaleX(1);
+  }
+
+  100% {
+    opacity: 0.24;
+    transform: scaleX(0.25);
+  }
+}
+
 /* Groups and server cards */
 
 #app .ui.styled.fluid.accordion,
 html[nz-theme='dark'] #app .ui.styled.fluid.accordion {
   overflow: visible;
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   border: 1px solid var(--nz-border) !important;
-  border-radius: var(--nz-radius-xl) !important;
-  background: rgba(255, 255, 255, 0.58) !important;
-  box-shadow: var(--nz-shadow-sm) !important;
+  border-radius: var(--nz-radius-lg) !important;
+  background: var(--nz-surface) !important;
+  box-shadow: none !important;
 }
 
 html[nz-theme='dark'] #app .ui.styled.fluid.accordion {
-  background: rgba(24, 33, 31, 0.66) !important;
+  background: var(--nz-surface) !important;
 }
 
 #app .ui.accordion > .title,
 html[nz-theme='dark'] #app .ui.accordion > .title {
-  min-height: 54px;
-  padding: 17px 20px !important;
+  min-height: 40px;
+  padding: 10px 12px !important;
   border: 0 !important;
-  border-radius: var(--nz-radius-xl) var(--nz-radius-xl) 0 0;
+  border-radius: var(--nz-radius-lg) var(--nz-radius-lg) 0 0;
   color: var(--nz-text) !important;
   font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-weight: 650;
+  letter-spacing: 0;
 }
 
 #app .ui.accordion > .title .dropdown.icon {
@@ -291,13 +464,13 @@ html[nz-theme='dark'] #app .ui.accordion > .title {
 }
 
 #app .ui.accordion > .content {
-  padding: 0 16px 16px !important;
+  padding: 0 8px 8px !important;
 }
 
 #app .ui.four.stackable.status.cards {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 8px;
   margin: 0 !important;
 }
 
@@ -309,7 +482,7 @@ html[nz-theme='dark'] #app .status.cards > .ui.card {
   border: 1px solid var(--nz-border) !important;
   border-radius: var(--nz-radius-lg) !important;
   background: var(--nz-surface) !important;
-  box-shadow: var(--nz-shadow-sm), var(--nz-shadow-md) !important;
+  box-shadow: none !important;
   transition:
     transform var(--nz-ease),
     border-color var(--nz-ease),
@@ -317,19 +490,26 @@ html[nz-theme='dark'] #app .status.cards > .ui.card {
 }
 
 #app .status.cards > .ui.card:hover {
-  z-index: 2;
+  /*
+   * A z-index here creates a stacking context around the server popup. That
+   * lets the fixed navigation appear above the popup backdrop as soon as the
+   * pointer is over a card. Keep the hover treatment visual-only so the
+   * popup and its dimmer always cover the whole viewport consistently.
+   */
+  z-index: auto;
   border-color: var(--nz-border-strong) !important;
-  box-shadow: var(--nz-shadow-sm), 0 16px 36px rgba(22, 34, 30, 0.1) !important;
-  transform: translateY(-2px);
+  box-shadow: var(--nz-shadow-md) !important;
+  transform: none;
 }
 
 html[nz-theme='dark'] #app .status.cards > .ui.card:hover {
-  box-shadow: var(--nz-shadow-sm), 0 16px 38px rgba(0, 0, 0, 0.26) !important;
+  box-shadow: var(--nz-shadow-md) !important;
 }
 
 .status.cards .ui.card > .content,
 html[nz-theme='dark'] .status.cards .ui.card > .content {
-  padding: 17px !important;
+  margin-top: 0 !important;
+  padding: 10px !important;
   border: 0 !important;
   border-radius: inherit;
 }
@@ -346,8 +526,8 @@ html[nz-theme='dark'] .status.cards .ui.card > .content {
 .status.cards .header,
 html[nz-theme='dark'] .status.cards .header {
   color: var(--nz-text) !important;
-  font-size: 1.04rem !important;
-  font-weight: 720 !important;
+  font-size: 0.95rem !important;
+  font-weight: 650 !important;
   line-height: 1.4 !important;
 }
 
@@ -357,14 +537,18 @@ html[nz-theme='dark'] .status.cards .header {
 }
 
 .status.cards .header > .info.icon {
-  width: 30px !important;
-  height: 30px !important;
-  margin-top: -4px;
+  display: inline-grid !important;
+  width: 25px !important;
+  height: 25px !important;
+  box-sizing: border-box;
+  margin-top: 0;
+  place-items: center;
   border-radius: 50%;
-  background: var(--nz-accent-soft);
+  border: 1px solid var(--nz-border);
+  background: transparent;
   color: var(--nz-accent) !important;
-  font-size: 0.95rem;
-  line-height: 30px;
+  font-size: 0.82rem;
+  line-height: 1 !important;
   text-align: center;
   cursor: pointer;
   transition:
@@ -372,31 +556,36 @@ html[nz-theme='dark'] .status.cards .header {
     transform var(--nz-ease);
 }
 
+.status.cards .header > .info.icon:before {
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
 .status.cards .header > .info.icon:hover {
-  background: var(--nz-border);
-  transform: scale(1.04);
+  background: var(--nz-surface-soft);
+  transform: none;
 }
 
 .status.cards .ui.divider {
-  margin: 12px 0 11px !important;
+  margin: 6px 0 5px !important;
   border-top-color: var(--nz-border) !important;
 }
 
 .status.cards .description,
 html[nz-theme='dark'] .status.cards .description {
   color: var(--nz-text-soft) !important;
-  font-size: 0.89rem;
+  font-size: 0.82rem;
 }
 
 .status.cards .ui.grid {
-  margin: 0 -4px -5px !important;
+  margin: 0 -3px -3px !important;
 }
 
 .status.cards .wide.column {
-  min-height: 30px;
+  min-height: 23px;
   height: auto !important;
-  padding: 5px 4px !important;
-  line-height: 20px;
+  padding: 2px 3px !important;
+  line-height: 18px;
 }
 
 .status.cards .wide.column:nth-child(1),
@@ -425,7 +614,7 @@ html[nz-theme='dark'] .status.cards .description {
 .status.cards .ui.progress,
 html[nz-theme='dark'] .status.cards .ui.progress {
   overflow: hidden;
-  height: 20px;
+  height: 14px;
   margin: 0 !important;
   border: 0 !important;
   border-radius: 999px !important;
@@ -434,22 +623,29 @@ html[nz-theme='dark'] .status.cards .ui.progress {
 }
 
 .status.cards .ui.progress .bar {
+  display: flex !important;
   min-width: 1.8em !important;
   height: 100%;
-  padding-right: 6px;
+  box-sizing: border-box;
+  padding-right: 0;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px !important;
   box-shadow: none !important;
-  line-height: 20px !important;
+  line-height: 1 !important;
   transition:
     width 300ms ease,
     background-color var(--nz-ease) !important;
 }
 
 .status.cards .ui.progress .bar small {
+  display: block;
+  margin: 0 !important;
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.01em;
+  line-height: 1 !important;
 }
 
 html[nz-theme='dark'] .status.cards .ui.progress .bar small {
@@ -474,36 +670,95 @@ html[nz-theme='dark'] .status.cards .ui.progress .bar small {
 
 .status.cards .ui.content.popup,
 html[nz-theme='dark'] .status.cards .ui.content.popup {
-  z-index: 1000;
+  position: fixed !important;
+  /* Keep the detail sheet above fixed navigation, compact menus and alerts. */
+  z-index: 100000000;
+  isolation: isolate;
+  top: 50% !important;
   right: auto !important;
-  left: 0 !important;
-  width: 100% !important;
-  min-width: 100% !important;
+  bottom: auto !important;
+  left: 50% !important;
+  width: min(380px, calc(100vw - 32px)) !important;
+  min-width: 0 !important;
+  max-width: min(380px, calc(100vw - 32px)) !important;
+  max-height: min(72vh, 560px);
   box-sizing: border-box;
-  padding: 18px 20px !important;
+  margin: 0 !important;
+  padding: 17px 19px !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--nz-border) !important;
-  border-radius: var(--nz-radius-lg) !important;
+  border-radius: var(--nz-radius-xl) !important;
   background: var(--nz-surface-raised) !important;
-  box-shadow: var(--nz-shadow-lg) !important;
+  box-shadow:
+    0 0 0 100vmax rgba(34, 34, 34, 0.24),
+    0 22px 56px rgba(0, 0, 0, 0.16) !important;
   color: var(--nz-text) !important;
   font-family: inherit !important;
-  font-size: 0.9rem;
-  line-height: 1.8 !important;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 450;
+  line-height: 1.65 !important;
+  text-align: left;
+  transform: translate(-50%, -50%) !important;
+}
+
+html[nz-theme='dark'] .status.cards .ui.content.popup {
+  box-shadow:
+    0 0 0 100vmax rgba(0, 0, 0, 0.5),
+    0 24px 64px rgba(0, 0, 0, 0.42) !important;
+}
+
+.status.cards .ui.content.popup:before {
+  display: none !important;
 }
 
 .status.cards .ui.content.popup .closePopup {
-  top: 12px;
-  right: 12px;
-  width: 28px !important;
-  height: 28px;
+  position: sticky;
+  top: 0;
+  right: 0;
+  float: right;
+  display: grid;
+  width: 26px !important;
+  height: 26px;
+  box-sizing: border-box;
+  margin: -6px -7px 3px 10px;
+  padding: 0 !important;
+  place-items: center;
+  border: 1px solid var(--nz-border);
   border-radius: 50%;
   background: var(--nz-surface-soft);
-  color: var(--nz-accent) !important;
-  line-height: 28px;
+  box-shadow: none !important;
+  color: var(--nz-text-soft) !important;
+  font-size: 0.72rem;
+  line-height: 1;
+  text-align: center;
+  transition:
+    border-color var(--nz-ease),
+    background-color var(--nz-ease),
+    color var(--nz-ease);
+}
+
+.status.cards .ui.content.popup .closePopup.window.close.icon:before {
+  display: grid;
+  width: 1em;
+  height: 1em;
+  margin: 0 !important;
+  place-items: center;
+  background: transparent !important;
+  content: '\f00d';
+  line-height: 1;
+}
+
+.status.cards .ui.content.popup .closePopup:hover {
+  border-color: var(--nz-border-strong);
+  background: var(--nz-canvas-strong);
+  color: var(--nz-text) !important;
 }
 
 .status.cards .chartbox {
-  margin-top: 10px;
+  margin-top: 9px;
   border-top: 1px solid var(--nz-border);
   padding-top: 8px;
 }
@@ -561,9 +816,88 @@ html[nz-theme='dark'] .ui.table tbody tr:hover {
   background: var(--nz-surface-soft) !important;
 }
 
+/* The server page has an upstream inline hover rule; retain the same neutral
+ * treatment in both light and dark modes. */
+body .server-row:hover {
+  background: var(--nz-surface-soft) !important;
+}
+
+/* Admin dashboard surfaces */
+
+.nb-container > .ui.container > .ui.grid:first-child {
+  margin: 0 0 10px !important;
+}
+
+.nb-container > .ui.container > .ui.grid:first-child >
+  .right.floated.right.aligned.twelve.wide.column {
+  display: flex;
+  width: 100% !important;
+  padding: 0 !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nb-container > .ui.container > .ui.grid:first-child >
+  .right.floated.right.aligned.twelve.wide.column > .ui.button {
+  margin: 0 !important;
+}
+
+.nb-log-toolbar {
+  margin-bottom: 10px !important;
+  padding: 9px 11px;
+  border: 1px solid var(--nz-border);
+  border-radius: var(--nz-radius-lg);
+  background: var(--nz-surface);
+  box-shadow: var(--nz-shadow-sm);
+  color: var(--nz-text-soft);
+}
+
+.nb-log-filter-buttons .ui.buttons {
+  border-radius: var(--nz-radius-md);
+  box-shadow: inset 0 0 0 1px var(--nz-border);
+}
+
+.nb-log-filter-buttons .ui.buttons > .button {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.nb-log-filter-buttons .ui.buttons > .button:first-child {
+  border-radius: var(--nz-radius-md) 0 0 var(--nz-radius-md) !important;
+}
+
+.nb-log-filter-buttons .ui.buttons > .button:last-child {
+  border-radius: 0 var(--nz-radius-md) var(--nz-radius-md) 0 !important;
+}
+
+.ui.pagination.menu,
+html[nz-theme='dark'] .ui.pagination.menu {
+  overflow: hidden;
+  border: 1px solid var(--nz-border) !important;
+  border-radius: var(--nz-radius-md) !important;
+  background: var(--nz-surface-raised) !important;
+  box-shadow: var(--nz-shadow-sm) !important;
+}
+
+.ui.pagination.menu > .item,
+html[nz-theme='dark'] .ui.pagination.menu > .item {
+  min-height: 34px;
+  padding: 8px 11px !important;
+  border-color: var(--nz-border) !important;
+  color: var(--nz-text) !important;
+}
+
+.ui.pagination.menu > .item.active {
+  background: var(--nz-accent-soft) !important;
+  color: var(--nz-accent) !important;
+  font-weight: 650;
+}
+
 .service-status > .ui.table {
   min-width: 760px;
-  margin: 0 0 22px;
+  margin: 0 0 16px;
 }
 
 .service-status .delay-today {
@@ -589,7 +923,7 @@ html[nz-theme='dark'] .ui.table tbody tr:hover {
 }
 
 .service-status > h2 {
-  margin: 28px 0 16px !important;
+  margin: 20px 0 11px !important;
   color: var(--nz-text);
   font-size: 1.25rem;
 }
@@ -608,8 +942,8 @@ html[nz-theme='dark'] .ui.table tbody tr:hover {
 }
 
 #app .nb-container > .ui.container:nth-child(2) > div {
-  margin-top: 16px !important;
-  padding: 18px;
+  margin-top: 12px !important;
+  padding: 14px;
   border: 1px solid var(--nz-border);
   border-radius: var(--nz-radius-lg);
   background: var(--nz-surface);
@@ -671,8 +1005,15 @@ html[nz-theme='dark'] .ui.button {
 
 .ui.icon.button {
   display: inline-flex;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
+  line-height: 1 !important;
+}
+
+.ui.icon.button > .icon {
+  margin: 0 !important;
+  line-height: 1 !important;
 }
 
 .nezha-primary-btn,
@@ -845,10 +1186,20 @@ html[nz-theme='dark'] .ui.message {
 
 .ui.modal,
 html[nz-theme='dark'] .ui.modal {
+  border: 1px solid var(--nz-border) !important;
   border-radius: var(--nz-radius-xl) !important;
   background: var(--nz-surface-raised) !important;
-  box-shadow: var(--nz-shadow-lg) !important;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.18) !important;
   color: var(--nz-text) !important;
+  font-family: inherit !important;
+}
+
+html[nz-theme='dark'] .ui.modal {
+  box-shadow: 0 26px 72px rgba(0, 0, 0, 0.46) !important;
+}
+
+.ui.mini.confirm.modal {
+  width: min(440px, calc(100vw - 32px)) !important;
 }
 
 .ui.modal > .header,
@@ -864,12 +1215,67 @@ html[nz-theme='dark'] .ui.modal > .actions {
 
 .ui.modal > .header {
   border-radius: var(--nz-radius-xl) var(--nz-radius-xl) 0 0 !important;
-  font-size: 1.15rem;
-  font-weight: 720;
+  padding: 16px 19px 13px !important;
+  font-size: 1rem !important;
+  font-weight: 680 !important;
+  line-height: 1.35;
+}
+
+.ui.modal > .content {
+  padding: 15px 19px 18px !important;
+  color: var(--nz-text-soft) !important;
+  font-size: 0.9rem;
+  line-height: 1.65;
 }
 
 .ui.modal > .actions:last-child {
+  padding: 10px 13px !important;
   border-radius: 0 0 var(--nz-radius-xl) var(--nz-radius-xl) !important;
+  background: var(--nz-surface-soft) !important;
+}
+
+.ui.modal > .actions > .ui.button {
+  min-height: 36px;
+  margin: 0 0 0 8px !important;
+  padding: 9px 15px !important;
+  border-radius: var(--nz-radius-md) !important;
+  font-size: 0.86rem;
+  font-weight: 620;
+  line-height: 1.2;
+  transform: none !important;
+}
+
+.ui.mini.confirm.modal > .actions > .negative.button {
+  border: 1px solid var(--nz-border-strong) !important;
+  background: var(--nz-surface-raised) !important;
+  box-shadow: none !important;
+  color: var(--nz-text) !important;
+}
+
+.ui.mini.confirm.modal > .actions > .negative.button:hover {
+  background: var(--nz-canvas-strong) !important;
+}
+
+.ui.modal > .actions > .positive.button,
+.ui.modal > .actions > .nezha-primary-btn.button {
+  border: 1px solid transparent !important;
+  background: var(--nz-accent) !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+.ui.modal > .actions > .positive.button:hover,
+.ui.modal > .actions > .nezha-primary-btn.button:hover {
+  background: var(--nz-accent-hover) !important;
+}
+
+html[nz-theme='dark'] .ui.modal > .actions > .positive.button,
+html[nz-theme='dark'] .ui.modal > .actions > .nezha-primary-btn.button {
+  color: #14201d !important;
+}
+
+.ui.modal > .actions > .right.labeled.icon.button > .icon {
+  display: none !important;
 }
 
 .ui.positive.message {
@@ -893,28 +1299,117 @@ html[nz-theme='dark'] .ui.modal > .actions {
   background: var(--nz-info-soft) !important;
 }
 
-.ui.dimmer {
-  background: rgba(17, 24, 22, 0.58) !important;
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+body > .ui.dimmer.modals,
+body > .ui.page.modals.dimmer {
+  background: rgba(34, 34, 34, 0.3) !important;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+html[nz-theme='dark'] body > .ui.dimmer.modals,
+html[nz-theme='dark'] body > .ui.page.modals.dimmer {
+  background: rgba(0, 0, 0, 0.56) !important;
 }
 
 .ui.popup,
 html[nz-theme='dark'] .ui.popup {
+  padding: 8px 10px !important;
   border: 1px solid var(--nz-border) !important;
   border-radius: var(--nz-radius-md) !important;
   background: var(--nz-surface-raised) !important;
-  box-shadow: var(--nz-shadow-lg) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1) !important;
   color: var(--nz-text) !important;
+  font-family: inherit !important;
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
-.ui-alerts .ui.message,
-#alert,
-html[nz-theme='dark'] #alert {
-  border-radius: var(--nz-radius-lg) !important;
+html[nz-theme='dark'] .ui.popup {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32) !important;
+}
+
+.ui-alerts.top-center {
+  z-index: 99999999;
+  top: calc(76px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  width: min(360px, calc(100vw - 24px));
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateX(-50%);
+}
+
+.ui-alerts > .ui.icon.message,
+html[nz-theme='dark'] .ui-alerts > .ui.icon.message {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 0 8px !important;
+  padding: 11px 14px !important;
+  align-items: center;
+  border: 1px solid var(--nz-border) !important;
+  border-radius: 14px !important;
   background: var(--nz-surface-raised) !important;
-  box-shadow: var(--nz-shadow-lg) !important;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08) !important;
   color: var(--nz-text) !important;
+  transform-origin: center top;
+}
+
+.ui-alerts > .ui.message > i.icon:not(.close) {
+  position: static !important;
+  display: grid !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 10px 0 0 !important;
+  flex: 0 0 28px;
+  border-radius: 50%;
+  background: var(--nz-success-soft) !important;
+  color: var(--nz-success) !important;
+  font-size: 0.82rem !important;
+  line-height: 1 !important;
+  opacity: 1 !important;
+  place-items: center;
+}
+
+.ui-alerts > .ui.message.warning > i.icon:not(.close) {
+  background: var(--nz-warning-soft) !important;
+  color: var(--nz-warning) !important;
+}
+
+.ui-alerts > .ui.message.error > i.icon:not(.close),
+.ui-alerts > .ui.message.negative > i.icon:not(.close) {
+  background: var(--nz-danger-soft) !important;
+  color: var(--nz-danger) !important;
+}
+
+.ui-alerts > .ui.message.info > i.icon:not(.close) {
+  background: var(--nz-info-soft) !important;
+  color: var(--nz-info) !important;
+}
+
+.ui-alerts > .ui.message > .content {
+  min-width: 0;
+  padding: 0 !important;
+}
+
+.ui-alerts > .ui.message > .content > .header {
+  margin: 0;
+  padding: 0 !important;
+  color: var(--nz-text) !important;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.ui-alerts > .ui.message > .content > p {
+  margin: 2px 0 0;
+  color: var(--nz-text-soft) !important;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.ui-alerts > .ui.message > .content > .header:empty,
+.ui-alerts > .ui.message > .content > p:empty {
+  display: none;
 }
 
 /* Login and password gate */
@@ -960,13 +1455,42 @@ html[nz-theme='dark'] .login .ui.image.header {
 }
 
 .login .ui.image.header img {
-  width: 52px;
-  height: 52px;
-  margin-bottom: 10px;
+  display: none;
+}
+
+.login .ui.image.header {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 12px;
+}
+
+.login .ui.image.header:before {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--nz-border-strong);
+  border-radius: 50%;
+  background: #222222;
+  color: #ffffff;
+  content: 'O';
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  place-items: center;
+}
+
+html[nz-theme='dark'] .login .ui.image.header:before {
+  border-color: #5d6663;
+  background: #f2f2f2;
+  color: #222222;
 }
 
 .login .ui.image.header .content {
-  padding-top: 5px !important;
+  padding: 0 !important;
   font-size: 1.25rem;
 }
 
@@ -1068,11 +1592,11 @@ html[nz-theme='dark'] .ui.segment .dropdown {
     display: none !important;
     position: fixed;
     z-index: 1200;
-    top: 64px;
-    left: 16px;
-    width: min(260px, calc(100vw - 32px));
-    max-height: calc(100vh - 80px);
-    padding: 6px !important;
+    top: 56px;
+    left: 12px;
+    width: min(244px, calc(100vw - 24px));
+    max-height: calc(100vh - 68px);
+    padding: 4px !important;
     overflow-y: auto;
     border: 1px solid var(--nz-border);
     border-radius: 0 0 var(--nz-radius-lg) var(--nz-radius-lg);
@@ -1097,40 +1621,49 @@ html[nz-theme='dark'] .ui.segment .dropdown {
   }
 
   .nb-container {
-    padding-top: 82px !important;
+    padding-top: 66px !important;
   }
 }
 
 @media (max-width: 731px) {
+  .ui-alerts.top-center {
+    top: calc(60px + env(safe-area-inset-top, 0px));
+  }
+
   .nb-menu.ui.menu,
   html[nz-theme='dark'] .nb-menu.ui.menu {
-    min-height: 58px;
+    min-height: 52px;
   }
 
   .nb-menu > .ui.container {
-    width: calc(100% - 16px) !important;
+    width: calc(100% - 12px) !important;
   }
 
   .nb-menu.ui.menu .item {
-    min-height: 44px;
-    margin-block: 8px;
-    padding-inline: 9px;
+    min-height: 38px;
+    margin-block: 7px;
+    padding-inline: 7px;
     font-size: 0.92rem;
   }
 
   .nb-menu.ui.menu .item > img:not(.ui),
   .nb-menu.ui.menu .logo {
-    width: 27px;
-    max-width: 27px;
-    height: 27px;
+    width: 26px;
+    max-width: 26px;
+    height: 26px;
+  }
+
+  .nb-menu.ui.menu > .ui.container > a.item:first-child:after {
+    width: 28px;
+    height: 28px;
   }
 
   .nb-menu #menu-items,
   html[nz-theme='dark'] .nb-menu #menu-items {
-    top: 58px !important;
-    left: 8px !important;
-    width: min(260px, calc(100vw - 16px)) !important;
-    padding: 6px !important;
+    top: 52px !important;
+    left: 6px !important;
+    width: min(244px, calc(100vw - 12px)) !important;
+    padding: 4px !important;
     border: 1px solid var(--nz-border);
     border-radius: 0 0 var(--nz-radius-lg) var(--nz-radius-lg);
     background: var(--nz-surface-raised) !important;
@@ -1138,26 +1671,27 @@ html[nz-theme='dark'] .ui.segment .dropdown {
   }
 
   .nb-menu #menu-items .item {
-    margin: 2px 0;
+    margin: 1px 0;
     text-align: left !important;
   }
 
   .nb-container {
-    padding: 76px 0 28px !important;
+    min-height: calc(100vh - 52px);
+    padding: 62px 0 18px !important;
   }
 
   .ui.container,
   .nb-container > .ui.container {
-    width: calc(100% - 20px) !important;
+    width: calc(100% - 16px) !important;
   }
 
   #app .ui.accordion > .title {
-    min-height: 50px;
-    padding: 15px 14px !important;
+    min-height: 38px;
+    padding: 9px 10px !important;
   }
 
   #app .ui.accordion > .content {
-    padding: 0 10px 10px !important;
+    padding: 0 6px 6px !important;
   }
 
   .ui.modal {
@@ -1174,7 +1708,7 @@ html[nz-theme='dark'] .ui.segment .dropdown {
 @media (max-width: 640px) {
   #app .ui.four.stackable.status.cards {
     grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
+    gap: 8px;
   }
 
   #app .ui.styled.fluid.accordion {
@@ -1182,7 +1716,7 @@ html[nz-theme='dark'] .ui.segment .dropdown {
   }
 
   .status.cards .ui.card > .content {
-    padding: 15px !important;
+    padding: 9px !important;
   }
 
   #app .status.cards > .ui.card:hover {
@@ -1191,14 +1725,15 @@ html[nz-theme='dark'] .ui.segment .dropdown {
 
   .status.cards .ui.content.popup {
     position: fixed !important;
-    top: 70px !important;
-    right: 10px !important;
+    top: 50% !important;
+    right: auto !important;
     bottom: auto !important;
-    left: 10px !important;
-    width: auto !important;
-    max-height: calc(100vh - 90px);
-    max-height: calc(100dvh - 90px);
+    left: 50% !important;
+    width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 100px);
+    max-height: calc(100dvh - 100px);
     overflow-y: auto;
+    transform: translate(-50%, -50%) !important;
   }
 
   .service-status > .ui.table {
@@ -1211,10 +1746,6 @@ html[nz-theme='dark'] .ui.segment .dropdown {
 }
 
 @media (max-width: 380px) {
-  .nb-menu > .ui.container > a.item:first-child {
-    display: none;
-  }
-
   .nb-menu.ui.menu .item {
     margin-inline: 0;
     padding-inline: 5px;
@@ -1243,5 +1774,14 @@ html[nz-theme='dark'] .ui.segment .dropdown {
   #app .status.cards > .ui.card:hover,
   .ui.button:hover {
     transform: none;
+  }
+
+  .refined-typing-circle,
+  .refined-typing-shadow {
+    animation: none !important;
+  }
+
+  .refined-typing-circle {
+    top: 10px;
   }
 }
