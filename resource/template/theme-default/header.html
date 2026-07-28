@@ -25,12 +25,24 @@
     <link rel="stylesheet" type="text/css" href="/static/semantic-ui-alerts.min.css">
     <link rel="stylesheet" type="text/css" href="/static/theme-default/css/main.css?v20240816">
     <link rel="stylesheet" type="text/css" href="/static/darkmode.css?v20240816">
-    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260728">
+    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260728h">
+    {{if eq .MatchedPath "/"}}
+    <script>
+        window.__refinedLoaderStartedAt = Date.now();
+        document.documentElement.classList.add('refined-loading');
+        window.__refinedLoaderFallback = window.setTimeout(function () {
+            document.documentElement.classList.remove('refined-loading');
+        }, 8000);
+    </script>
+    {{end}}
     <script src="/static/cdn/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="/static/cdn/semantic-ui@2.4.2/dist/semantic.min.js"></script>
     <script src="/static/cdn/vue@2.7.16/dist/vue.min.js"></script>
     <script src="/static/cdn/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="/static/semantic-ui-alerts.min.js"></script>
+    {{if eq .MatchedPath "/"}}
+    <script src="/static/refined/refined-loader.js?v20260728c"></script>
+    {{end}}
     <script src="/static/theme-default/js/mixin.js?v20240911"></script>
     <script>
         document.documentElement.setAttribute('nz-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -38,4 +50,17 @@
 </head>
 
 <body>
+    {{if eq .MatchedPath "/"}}
+    <div id="refined-page-loader" class="refined-page-loader" role="status" aria-live="polite"
+        aria-label="{{if eq .Conf.Language "zh-CN"}}正在加载{{else}}Loading{{end}}">
+        <div class="refined-typing-indicator" aria-hidden="true">
+            <span class="refined-typing-circle"></span>
+            <span class="refined-typing-circle"></span>
+            <span class="refined-typing-circle"></span>
+            <span class="refined-typing-shadow"></span>
+            <span class="refined-typing-shadow"></span>
+            <span class="refined-typing-shadow"></span>
+        </div>
+    </div>
+    {{end}}
     {{end}}

@@ -6,9 +6,11 @@ PROJECT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$PROJECT_DIR"
 
 CSS_PATH="resource/static/refined/refined.css"
+LOADER_PATH="resource/static/refined/refined-loader.js"
 COMMON_HEADER="resource/template/common/header.html"
 PUBLIC_HEADER="resource/template/theme-default/header.html"
-STYLESHEET_URL="/static/refined/refined.css?v20260728"
+STYLESHEET_PATH="/static/refined/refined.css"
+LOADER_PATH_URL="/static/refined/refined-loader.js"
 
 fail() {
     echo "Refined boundary check failed: $*" >&2
@@ -16,13 +18,19 @@ fail() {
 }
 
 [ -s "$CSS_PATH" ] || fail "$CSS_PATH is missing or empty"
+[ -s "$LOADER_PATH" ] || fail "$LOADER_PATH is missing or empty"
 
 for header in "$COMMON_HEADER" "$PUBLIC_HEADER"; do
-    count=$(grep -F -c "$STYLESHEET_URL" "$header" || true)
+    count=$(grep -F -c "$STYLESHEET_PATH" "$header" || true)
     [ "$count" -eq 1 ] || fail "$header must load the Refined stylesheet exactly once"
 done
 
+loader_count=$(grep -F -c "$LOADER_PATH_URL" "$PUBLIC_HEADER" || true)
+[ "$loader_count" -eq 1 ] || fail "$PUBLIC_HEADER must load the Refined homepage loader exactly once"
+grep -Fq 'id="refined-page-loader"' "$PUBLIC_HEADER" || fail "homepage loader markup is missing"
+
 grep -Fq -- "--nz-accent:" "$CSS_PATH" || fail "design tokens are missing"
+grep -Fq ".refined-page-loader" "$CSS_PATH" || fail "homepage loader styles are missing"
 grep -Fq ".status.cards .ui.progress.fine .bar" "$CSS_PATH" || fail "status compatibility rule is missing"
 grep -Fq "@media (prefers-reduced-motion: reduce)" "$CSS_PATH" || fail "reduced-motion support is missing"
 
@@ -33,7 +41,7 @@ if [ "${1:-}" != "" ]; then
 
     unexpected=$(
         git diff --name-only "$base_ref"...HEAD |
-            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|refined-install\.sh|refined-update\.sh|resource/static/refined/.*|resource/template/common/header\.html|resource/template/theme-default/header\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
+            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|refined-install\.sh|refined-update\.sh|resource/static/refined/.*|resource/template/common/(header|menu)\.html|resource/template/theme-default/(header|menu)\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
             true
     )
 
