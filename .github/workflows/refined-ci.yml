@@ -1,0 +1,68 @@
+name: Refined CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refined-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dashboard:
+    name: Dashboard / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, windows, macos]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.26.x"
+          cache: true
+
+      - name: Verify Refined boundary
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          git remote add upstream https://github.com/railzen/nezha-zero.git 2>/dev/null ||
+            git remote set-url upstream https://github.com/railzen/nezha-zero.git
+          git fetch --no-tags upstream main
+          ./scripts/verify-refined-boundary.sh upstream/main
+
+      - name: Test dashboard
+        run: go test -v ./...
+
+      - name: Build dashboard
+        run: go build -v ./cmd/dashboard
+
+  agent:
+    name: Agent compatibility
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.26.x"
+          cache-dependency-path: agent/go.sum
+
+      - name: Test agent
+        run: go test -skip TestCloudflareDetection -v ./...
+
+      - name: Build agent
+        run: go build ./cmd/agent

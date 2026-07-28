@@ -1,0 +1,34 @@
+name: nezha-zero-refined
+
+services:
+  dashboard:
+    image: ${REFINED_IMAGE:-ghcr.io/aoomee/nezha-zero-refined:latest}
+    container_name: nezha-zero-refined
+    restart: unless-stopped
+    environment:
+      NZ_LANGUAGE: zh-CN
+      NZ_LOCATION: ${TZ:-Asia/Shanghai}
+      NZ_HTTPPORT: "80"
+      NZ_GRPCPORT: "5555"
+      NZ_GRPCHOST: ${NZ_GRPC_HOST:-}
+      NZ_GRPCDISCOVERKEY: ${NZ_GRPC_SECRET:?Run ./refined-install.sh first}
+      NZ_OAUTH2_ADMIN: ${NZ_ADMIN:-admin}
+      NZ_OAUTH2_DISABLEOAUTHLOGIN: "true"
+      NZ_SITE_BRAND: ${NZ_SITE_NAME:-Nezha Monitoring}
+      NZ_SITE_THEME: default
+      NZ_SITE_ADMINPASSWORD: ${NZ_ADMIN_PASSWORD:?Run ./refined-install.sh first}
+      NZ_SITE_DISABLEPASSWORDLOGIN: "false"
+    volumes:
+      - ./data:/dashboard/data
+    ports:
+      - "${NZ_HTTP_PORT:-8008}:80"
+      - "${NZ_GRPC_PORT:-5555}:5555"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      org.opencontainers.image.source: https://github.com/aoomee/nezha-zero-refined
+      org.opencontainers.image.description: Nezha Zero with the Refined presentation layer

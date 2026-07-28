@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   build-dashboard:
+    if: github.repository == 'railzen/nezha-zero'
     strategy:
       fail-fast: true
       matrix:
@@ -63,6 +64,7 @@ jobs:
           path: |
             ./dist/*/*
   build-agent:
+    if: github.repository == 'railzen/nezha-zero'
     strategy:
       fail-fast: true
       matrix:
@@ -129,7 +131,10 @@ jobs:
 
   release-docker:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    if: >-
+      github.repository == 'railzen/nezha-zero' &&
+      github.event_name == 'push' &&
+      contains(github.ref, 'refs/tags/')
     needs: build-dashboard
     name: Release Docker images
     env:
@@ -234,7 +239,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [build-dashboard, build-agent, release-docker]
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/') && vars.DO_RELEASE == 'true'
+    if: >-
+      github.repository == 'railzen/nezha-zero' &&
+      github.event_name == 'push' &&
+      contains(github.ref, 'refs/tags/') &&
+      vars.DO_RELEASE == 'true'
     name: Release
     steps:
       - name: Download artifacts
