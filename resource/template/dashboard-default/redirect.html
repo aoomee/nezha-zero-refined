@@ -6,6 +6,81 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting..</title>
+    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260729v">
+    <style>
+        body {
+            display: grid;
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            box-sizing: border-box;
+            place-items: center;
+            background: var(--nz-canvas) !important;
+        }
+
+        p {
+            width: min(420px, 100%);
+            margin: 0;
+            padding: 28px;
+            box-sizing: border-box;
+            border: 1px solid var(--nz-border);
+            border-radius: var(--nz-radius-xl);
+            background: var(--nz-surface);
+            box-shadow: var(--nz-shadow-sm), var(--nz-shadow-md);
+            color: var(--nz-text-soft);
+            line-height: 1.65;
+            text-align: center;
+        }
+
+        p::before {
+            display: block;
+            width: 22px;
+            height: 22px;
+            margin: 0 auto 16px;
+            border: 2px solid var(--nz-border-strong);
+            border-top-color: var(--nz-text);
+            border-radius: 50%;
+            content: "";
+            animation: redirect-spin 700ms linear infinite;
+        }
+
+        p a {
+            color: var(--nz-text);
+            font-weight: 650;
+            text-decoration: underline;
+            text-decoration-color: var(--nz-border-strong);
+            text-underline-offset: 3px;
+        }
+
+        p a:hover {
+            color: var(--nz-text);
+            text-decoration-color: currentColor;
+        }
+
+        @keyframes redirect-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                color-scheme: dark;
+                --nz-canvas: #101010;
+                --nz-surface: #181818;
+                --nz-text: #f3f3f3;
+                --nz-text-soft: #a3a3a3;
+                --nz-border: #303030;
+                --nz-border-strong: #414141;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            p::before {
+                animation: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <p>If you are not redirected, please click <a href="{{.URL}}">here</a>.</p>

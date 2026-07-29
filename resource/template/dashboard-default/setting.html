@@ -82,6 +82,16 @@
                 <input type="text" name="Title" placeholder="{{tr "NezhaMonitoring"}}" value="{{.Conf.Site.Brand}}">
             </div>
             <div class="field">
+                <label>站点 Logo</label>
+                <input type="url" name="LogoURL" placeholder="https://example.com/logo.svg" value="{{.Conf.Site.LogoURL}}">
+                <small class="nb-setting-hint">用于浏览器网页图标、前台和管理后台左上角。留空即可使用默认 O 图标。</small>
+            </div>
+            <div class="field">
+                <label>服务器连接页 Logo</label>
+                <input type="url" name="ConnectionLogoURL" placeholder="https://example.com/connection-logo.svg" value="{{.Conf.Site.ConnectionLogoURL}}">
+                <small class="nb-setting-hint">用于终端和文件管理页浏览器标签中、服务器名称左侧的图标。留空会跟随「站点 Logo」。</small>
+            </div>
+            <div class="field">
                 <label>{{tr "AdministratorSettings"}}</label>
             </div>
             <div class="ui segment">
@@ -134,7 +144,7 @@
             </div>
             <div class="field">
                 <label>{{tr "GRPCDiscoverKey"}}</label>
-                <div class="ui action input">
+                <div class="ui action input refined-icon-action-input">
                     <input type="text" name="GRPCDiscoverKey" placeholder="" value="{{.Conf.GRPCDiscoverKey}}" autocomplete="off">
                     <button type="button" class="ui icon button ip-copy" onclick="generateRandomString()">
                         <i class="refresh icon"></i>

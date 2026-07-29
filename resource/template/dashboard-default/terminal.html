@@ -7,51 +7,122 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tty@{{.ServerName}} - {{.Title}}</title>
-    <link rel="shortcut icon" type="image/png" href="/static/logo.svg?v20210804" />
+    <link rel="shortcut icon" type="image/png" href="{{if .Conf.Site.ConnectionLogoURL}}{{.Conf.Site.ConnectionLogoURL}}{{else if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg?v20210804{{end}}" />
     <link type="text/css" rel="stylesheet" href="/static/cdn/xterm@5.5.0/css/xterm.css" />
+    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260729v" />
 </head>
 <style>
     html,
     body,
     #terminal-container {
-        padding: unset;
-        margin: unset;
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
     }
 
     body {
-        background-color: black;
+        display: block;
+        overflow: hidden;
+        background: #101010 !important;
+        color: #f5f5f5 !important;
+    }
+
+    #terminal-container {
+        box-sizing: border-box;
+        overflow: hidden;
+        background: #101010;
     }
 
     #file-list-iframe {
         position: absolute;
         top: 0;
         right: 0;
-        width: 30%;
+        width: clamp(320px, 34vw, 480px);
+        max-width: 100vw;
         height: 100%;
-        border: none;
-        background-color: white;
         display: none;
         z-index: 10;
+        box-sizing: border-box;
+        border: 0;
+        border-left: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 16px 0 0 16px;
+        background: #f7f7f7;
+        box-shadow: -16px 0 44px rgba(0, 0, 0, 0.28);
     }
 
     #folder-button {
         position: absolute;
-        bottom: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 25px;
-        font-size: 24px;
+        right: max(18px, env(safe-area-inset-right));
+        bottom: max(18px, env(safe-area-inset-bottom));
+        z-index: 20;
         display: flex;
+        width: 46px;
+        height: 46px;
+        margin: 0;
+        padding: 0;
         justify-content: center;
         align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 50%;
+        background: #f4f4f4;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        color: #191919;
         cursor: pointer;
-        z-index: 20;
+        font-size: 0;
+        transition:
+            background-color 180ms ease,
+            transform 180ms ease;
+    }
+
+    #folder-button::before {
+        width: 18px;
+        height: 13px;
+        box-sizing: border-box;
+        border: 2px solid currentColor;
+        border-radius: 3px;
+        content: "";
+        transform: translateY(2px);
+    }
+
+    #folder-button::after {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        width: 8px;
+        height: 5px;
+        box-sizing: border-box;
+        border: 2px solid currentColor;
+        border-bottom: 0;
+        border-radius: 3px 3px 0 0;
+        content: "";
+    }
+
+    #folder-button:hover {
+        background: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    #folder-button:active {
+        transform: translateY(0);
+    }
+
+    #folder-button:focus-visible {
+        outline: 3px solid rgba(255, 255, 255, 0.28) !important;
+        outline-offset: 3px;
+    }
+
+    @media (max-width: 640px) {
+        #file-list-iframe {
+            width: min(92vw, 440px);
+            border-radius: 14px 0 0 14px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #folder-button {
+            transition: none;
+        }
     }
 </style>
 

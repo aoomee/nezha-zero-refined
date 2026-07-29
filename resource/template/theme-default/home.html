@@ -15,11 +15,15 @@
                         <div v-for="server in group.data" :id="server.ID" class="ui card">
                             <div class="content" v-if="server.Host" style="margin-top: 10px; padding-bottom: 5px">
                                 <div class="header">
-                                    <i style="width: 22px;border-radius: 4px;" :class="'fi fi-' + server.Host.CountryCode"></i>                                    
-                                    <i v-if='isWindowsPlatform(server.Host.Platform)' class="windows icon"></i>
-                                    <i v-else-if='getFontLogoClass(server.Host.Platform) == "" && server.State.Uptime > 0' class="fl-tux"></i>
-                                    <i v-else :class="'fl-' + getFontLogoClass(server.Host.Platform)"></i>
-                                    @#server.Name + (server.live?'':'[{{tr "Offline"}}]')#@
+                                    <span class="refined-server-title">
+                                        <i :class="'fi fi-' + server.Host.CountryCode"></i>
+                                        <template v-if="shouldShowPlatformLogo(server.Host.Platform)">
+                                            <i v-if='isWindowsPlatform(server.Host.Platform)' class="windows icon"></i>
+                                            <i v-else-if='getFontLogoClass(server.Host.Platform) == "" && server.State.Uptime > 0' class="fl-tux"></i>
+                                            <i v-else :class="'fl-' + getFontLogoClass(server.Host.Platform)"></i>
+                                        </template>
+                                        <span class="refined-server-name">@#server.Name + (server.live?'':'[{{tr "Offline"}}]')#@</span>
+                                    </span>
                                     <i @click="togglePopup($event, server.ID)" aria-expanded="false" class="nezha-secondary-font info circle icon"></i>
                                     <div class="ui content popup" :class="{ 'visible': isActive(server.ID) }" style="margin-bottom: 0;">
                                         <i class="closePopup window close icon" @click="closePopup(server.ID)"></i>
@@ -112,40 +116,37 @@
                                         </div>
                                         <div class="three wide column">{{tr "NetSpeed"}}</div>
                                         <div class="thirteen wide column">
-                                            <i class="arrow alternate circle down outline icon"></i>
-                                            @#formatByteSize(server.State.NetInSpeed)#@/s
-                                            <i class="arrow alternate circle up outline icon"></i>
-                                            @#formatByteSize(server.State.NetOutSpeed)#@/s
+                                            <div class="refined-metrics refined-metrics--two">
+                                                <span class="refined-metric"><i class="arrow alternate circle down outline icon"></i><span>@#formatByteSize(server.State.NetInSpeed)#@/s</span></span>
+                                                <span class="refined-metric"><i class="arrow alternate circle up outline icon"></i><span>@#formatByteSize(server.State.NetOutSpeed)#@/s</span></span>
+                                            </div>
                                         </div>
                                         <div class="three wide column">{{tr "NetTransfer"}}</div>
                                         <div class="thirteen wide column">
-                                            <i class="arrow circle down icon"></i>
-                                            @#formatByteSize(server.State.NetInTransfer)#@
-                                            &nbsp;
-                                            <i class="arrow circle up icon"></i>
-                                            @#formatByteSize(server.State.NetOutTransfer)#@
+                                            <div class="refined-metrics refined-metrics--two">
+                                                <span class="refined-metric"><i class="arrow circle down icon"></i><span>@#formatByteSize(server.State.NetInTransfer)#@</span></span>
+                                                <span class="refined-metric"><i class="arrow circle up icon"></i><span>@#formatByteSize(server.State.NetOutTransfer)#@</span></span>
+                                            </div>
                                         </div>
                                         <div class="three wide column">{{tr "Stat"}}</div>
                                         <div class="thirteen wide column">
-                                            <i class="bi bi-cpu-fill" style="font-size: 1.1rem; color: #4a86e8;"></i>
-                                            @#getCoreAndGHz(server.Host.CPU)#@
-                                            &nbsp;
-                                            <i class="bi bi-memory" style="font-size: 1.1rem; color: #00ac0d;"></i>
-                                            @#getK2Gb(server.Host.MemTotal)#@
-                                            &nbsp;
-                                            <i class="bi bi-hdd" style="font-size: 1.1rem; color: #e41e10"></i>
-                                            @#getK2Gb(server.Host.DiskTotal)#@
+                                            <div class="refined-metrics refined-metrics--three">
+                                                <span class="refined-metric"><i class="bi bi-cpu-fill" style="font-size: 1.1rem; color: #4a86e8;"></i><span>@#getCoreAndGHz(server.Host.CPU)#@</span></span>
+                                                <span class="refined-metric"><i class="bi bi-memory" style="font-size: 1.1rem; color: #00ac0d;"></i><span>@#getK2Gb(server.Host.MemTotal)#@</span></span>
+                                                <span class="refined-metric"><i class="bi bi-hdd" style="font-size: 1.1rem; color: #e41e10"></i><span>@#getK2Gb(server.Host.DiskTotal)#@</span></span>
+                                            </div>
                                         </div>
                                         <div class="three wide column">{{tr "Load"}}</div>
                                         <div class="thirteen wide column">
-                                            <i class="bi bi-activity" style="font-size: 1.1rem; color: #e41e10;"></i>
-                                            @#toFixed2(server.State.Load1)#@ |
-                                            @#toFixed2(server.State.Load5)#@ |
-                                            @#toFixed2(server.State.Load15)#@
+                                            <div class="refined-metrics refined-metrics--one">
+                                                <span class="refined-metric"><i class="bi bi-activity" style="font-size: 1.1rem; color: #e41e10;"></i><span>@#toFixed2(server.State.Load1)#@ | @#toFixed2(server.State.Load5)#@ | @#toFixed2(server.State.Load15)#@</span></span>
+                                            </div>
                                         </div>
                                         <div class="three wide column">{{tr "Uptime"}}</div>
                                         <div class="thirteen wide column">
-                                            <i class="clock icon"></i>@#secondToDate(server.State.Uptime)#@
+                                            <div class="refined-metrics refined-metrics--one">
+                                                <span class="refined-metric"><i class="clock icon"></i><span>@#secondToDate(server.State.Uptime)#@</span></span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -241,7 +242,15 @@
                 const gridLeft = 25;
                 const gridRight = 12;
                 const backgroundColor = '';
-                const borderColor = "#ffffff";
+                const rootStyle = getComputedStyle(document.documentElement);
+                const chartText = rootStyle.getPropertyValue('--nz-text').trim() || '#171717';
+                const chartTextSoft = rootStyle.getPropertyValue('--nz-text-soft').trim() || '#777777';
+                const chartBorder = rootStyle.getPropertyValue('--nz-border').trim() || '#e4e4e1';
+                const chartSurface = rootStyle.getPropertyValue('--nz-surface-raised').trim() || '#ffffff';
+                const chartDark = $('html').attr('nz-theme') == "dark";
+                const chartColors = chartDark
+                    ? ['#f3f3f3', '#c7c7c7', '#9f9f9f', '#7b7b7b', '#5e5e5e']
+                    : ['#171717', '#444444', '#686868', '#8b8b8b', '#adadad'];
                 const chartData = this.chartDataList[id - 1];
                 const chartContainer = this.$refs[`chart${id}`][0];
                 const chartTheme = $('html').attr('nz-theme') == "dark" ? "dark" : "";
@@ -274,6 +283,7 @@
                     };
                 });
                 const option = {
+                    color: chartColors,
                     backgroundColor: backgroundColor,
                     title: {
                         show: false
@@ -281,15 +291,21 @@
                     tooltip: {
                         show: true,
                         trigger: 'axis',
+                        borderWidth: 1,
+                        borderColor: chartBorder,
+                        backgroundColor: chartSurface,
                         textStyle: {
+                            color: chartText,
                             fontSize: fontSize,
-                        }
+                        },
+                        extraCssText: 'border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.12);'
                     },
                     legend: {
                         icon: 'rect',
                         data: chartData.map(item => item.monitor_name),
                         show: true,
                         textStyle: {
+                            color: chartTextSoft,
                             fontSize: fontSize,
                         },
                         lineStyle: {
@@ -306,18 +322,26 @@
                         type: 'time',
                         data: xAxisData,
                         axisLabel: {
+                            color: chartTextSoft,
                             textStyle: {
                                 fontSize: fontSize
                             }
-                        }
+                        },
+                        axisLine: { lineStyle: { color: chartBorder } },
+                        axisTick: { lineStyle: { color: chartBorder } },
+                        splitLine: { lineStyle: { color: chartBorder } }
                     },
                     yAxis: {
                         type: 'value',
                         axisLabel: {
+                            color: chartTextSoft,
                             textStyle: {
                                 fontSize: fontSize
                             }
-                        }
+                        },
+                        axisLine: { lineStyle: { color: chartBorder } },
+                        axisTick: { lineStyle: { color: chartBorder } },
+                        splitLine: { lineStyle: { color: chartBorder } }
                     },
                     dataZoom: [
                         {
@@ -329,6 +353,7 @@
                     ],
                     series: seriesData,
                     textStyle: {
+                        color: chartText,
                         fontSize: fontSize,
                     },
                     grid: {
@@ -348,6 +373,9 @@
             },
             isWindowsPlatform(str) {
                 return str.includes('Windows')
+            },
+            shouldShowPlatformLogo(str) {
+                return this.getFontLogoClass(str) !== 'apple'
             },
             getFontLogoClass(str) {
                 if (["almalinux",

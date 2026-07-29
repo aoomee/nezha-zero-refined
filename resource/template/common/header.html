@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta content="telephone=no" name="format-detection">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#f6f6f5">
     <title>{{.Title}}</title>
-    <link rel="shortcut icon" type="image/png" href="/static/logo.svg?v20210804" />
+    <link rel="shortcut icon" type="image/png" href="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg?v20210804{{end}}" />
     <!-- Performance: Preload critical resources -->
     <link rel="preload" href="/static/cdn/semantic-ui@2.4.2/dist/themes/default/assets/fonts/icons.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/static/cdn/semantic-ui@2.4.2/dist/fonts/Lato-Bold.woff2" as="font" type="font/woff2" crossorigin>
@@ -21,7 +23,34 @@
     <link rel="stylesheet" type="text/css" href="/static/semantic-ui-alerts.min.css">
     <link rel="stylesheet" type="text/css" href="/static/main.css?v20240813">
     <link rel="stylesheet" type="text/css" href="/static/darkmode.css?v20240813">
-    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260728h">
+    <style>
+        html {
+            color-scheme: light;
+        }
+
+        html,
+        body,
+        body.pushable,
+        body.pushable > .pusher,
+        .pushable,
+        .pushable > .pusher {
+            background: #f6f6f5 !important;
+        }
+
+        .ui.sidebar {
+            border-right: 0 !important;
+            background: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        .pushable > .pusher:after,
+        .pushable > .pusher.dimmed:after,
+        body.pushable > .pusher:after,
+        body.pushable > .pusher.dimmed:after {
+            background: rgba(246, 246, 245, 0.74) !important;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260729v">
     <script>
         document.documentElement.setAttribute('nz-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
     </script>
