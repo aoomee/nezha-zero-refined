@@ -9,6 +9,11 @@ CSS_PATH="resource/static/refined/refined.css"
 LOADER_PATH="resource/static/refined/refined-loader.js"
 COMMON_HEADER="resource/template/common/header.html"
 PUBLIC_HEADER="resource/template/theme-default/header.html"
+STANDALONE_TEMPLATES="
+resource/template/dashboard-default/file.html
+resource/template/dashboard-default/redirect.html
+resource/template/dashboard-default/terminal.html
+"
 STYLESHEET_PATH="/static/refined/refined.css"
 LOADER_PATH_URL="/static/refined/refined-loader.js"
 
@@ -23,6 +28,11 @@ fail() {
 for header in "$COMMON_HEADER" "$PUBLIC_HEADER"; do
     count=$(grep -F -c "$STYLESHEET_PATH" "$header" || true)
     [ "$count" -eq 1 ] || fail "$header must load the Refined stylesheet exactly once"
+done
+
+for template in $STANDALONE_TEMPLATES; do
+    count=$(grep -F -c "$STYLESHEET_PATH" "$template" || true)
+    [ "$count" -eq 1 ] || fail "$template must load the Refined stylesheet exactly once"
 done
 
 loader_count=$(grep -F -c "$LOADER_PATH_URL" "$PUBLIC_HEADER" || true)
@@ -41,7 +51,7 @@ if [ "${1:-}" != "" ]; then
 
     unexpected=$(
         git diff --name-only "$base_ref"...HEAD |
-            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|refined-install\.sh|refined-update\.sh|resource/static/refined/.*|resource/template/common/(header|menu)\.html|resource/template/theme-default/(header|menu)\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
+            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|refined-install\.sh|refined-update\.sh|resource/static/refined/.*|resource/static/public-note-editor\.css|resource/template/common/(header|menu)\.html|resource/template/dashboard-default/(file|redirect|server|terminal)\.html|resource/template/theme-default/(header|home|menu|network|service)\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
             true
     )
 

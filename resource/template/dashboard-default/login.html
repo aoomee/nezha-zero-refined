@@ -4,7 +4,7 @@
   <div class="ui center aligned grid">
     <div class="column">
       <h2 class="ui image header">
-        <a href="/" class="image"><img src="/static/logo.svg?v20210804" alt=""></a>
+        <a href="/" class="image"><img src="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg?v20210804{{end}}" alt=""></a>
         <div class="content">
           {{if .PasswordEnabled}}
             {{tr "AdminLogin"}}

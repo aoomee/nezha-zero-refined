@@ -85,6 +85,8 @@ type Config struct {
 		DashboardTheme       string
 		CustomCode           string
 		CustomCodeDashboard  string
+		LogoURL              string // 自定义站点图标（网页图标、前台与后台左上角）
+		ConnectionLogoURL    string // 自定义连接页图标（终端与文件管理浏览器标签）
 		ViewPassword         string // 前台查看密码
 		AdminPassword        string // 管理员密码
 		DisablePasswordLogin bool   // 禁用密码登录

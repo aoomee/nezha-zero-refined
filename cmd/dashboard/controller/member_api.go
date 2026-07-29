@@ -1219,6 +1219,8 @@ type settingForm struct {
 	DashboardTheme                  string
 	CustomCode                      string
 	CustomCodeDashboard             string
+	LogoURL                         string
+	ConnectionLogoURL               string
 	CustomNameservers               string
 	ViewPassword                    string
 	IgnoredIPNotification           string
@@ -1374,6 +1376,8 @@ func (ma *memberAPI) updateSetting(c *gin.Context) {
 	singleton.Conf.Site.DashboardTheme = sf.DashboardTheme
 	singleton.Conf.Site.CustomCode = sf.CustomCode
 	singleton.Conf.Site.CustomCodeDashboard = sf.CustomCodeDashboard
+	singleton.Conf.Site.LogoURL = sf.LogoURL
+	singleton.Conf.Site.ConnectionLogoURL = sf.ConnectionLogoURL
 	singleton.Conf.DNSServers = sf.CustomNameservers
 	singleton.Conf.Site.ViewPassword = sf.ViewPassword
 	singleton.Conf.Oauth2.Admin = sf.Admin

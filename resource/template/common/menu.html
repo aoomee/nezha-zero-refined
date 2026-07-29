@@ -1,8 +1,8 @@
 {{define "common/menu"}}
 <div class="ui large top fixed menu nb-menu">
     <div class="ui container">
-        <a class="item" href="/" aria-label="{{tr "Home"}}">
-            <img src="/static/logo.svg?v20210804" class="logo" alt="" aria-hidden="true">
+        <a class="item{{if .Conf.Site.LogoURL}} has-custom-logo{{end}}" href="/" aria-label="{{tr "Home"}}">
+            <img src="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg?v20210804{{end}}" class="logo" alt="" aria-hidden="true">
         </a>
         <a class="item" id="menu-toggle-button">
             <div>
@@ -117,7 +117,7 @@
             background-color: #fff;
             width: 200px; /* Adjust width as needed */
             z-index: 1000; /* Ensure it floats above other elements */
-            box-shadow: 2px 0 5px rgba(0,0,0,0.3); /* Shadow on the right side */
+            box-shadow: none; /* Keep the mobile drawer edge calm while styles load */
             flex-direction: column;
             padding-top: 0px; /* Space at the top */
         }
@@ -140,6 +140,17 @@
             display: block;
             width: 100%;
             text-align: center;
+        }
+
+        /* Override Semantic UI's black sidebar dimmer before the refined
+           stylesheet finishes loading, avoiding a dark refresh flash. */
+        .ui.sidebar {
+            border-right: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .pusher.dimmed::after {
+            background: rgba(246, 246, 245, 0.74) !important;
         }
     }
 

@@ -146,7 +146,7 @@
 .pne-wheel-col li.is-active {
   opacity: 1;
   transform: scale(1);
-  color: #0338d6;
+  color: var(--pne-text, var(--nz-text, #171717));
   font-weight: 600;
 }
 
@@ -245,7 +245,7 @@ html[nz-theme="dark"] .pne-wheel-col li.is-adjacent {
 }
 
 html[nz-theme="dark"] .pne-wheel-col li.is-active {
-  color: #6b9fff;
+  color: var(--pne-text, var(--nz-text, #f3f3f3));
 }
 
 html[nz-theme="dark"] .pne-wheel-col + .pne-wheel-col {
@@ -302,5 +302,389 @@ html[nz-theme="dark"] .pne-wheel-head {
 
   .pne-modal > .actions > .button {
     margin: 0 !important;
+  }
+}
+
+/* ---- Refined neutral theme ----
+ * This component stylesheet is loaded after refined.css. Keep every override
+ * scoped to the public-note modal and inherit the shared design tokens.
+ */
+
+.pne-modal {
+  --pne-surface: var(--nz-surface, #ffffff);
+  --pne-surface-raised: var(--nz-surface-raised, #ffffff);
+  --pne-surface-soft: var(--nz-surface-soft, #f7f7f7);
+  --pne-control: var(--nz-control, #f1f1f1);
+  --pne-text: var(--nz-text, #171717);
+  --pne-text-soft: var(--nz-text-soft, #777777);
+  --pne-text-faint: var(--nz-text-faint, #a3a3a3);
+  --pne-border: var(--nz-border, #e4e4e4);
+  --pne-border-strong: var(--nz-border-strong, #d6d6d6);
+  --pne-primary: var(--nz-text, #171717);
+  --pne-primary-foreground: var(--nz-surface, #ffffff);
+  --pne-radius-sm: var(--nz-radius-sm, 8px);
+  --pne-radius-md: var(--nz-radius-md, 12px);
+  --pne-radius-lg: var(--nz-radius-lg, 16px);
+  --pne-radius-xl: var(--nz-radius-xl, 20px);
+  --pne-shadow: var(--nz-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.12));
+  --pne-focus-ring: rgba(23, 23, 23, 0.12);
+  color: var(--pne-text);
+  font-variant-numeric: tabular-nums;
+}
+
+html[nz-theme="dark"] .pne-modal {
+  --pne-surface: var(--nz-surface, #181818);
+  --pne-surface-raised: var(--nz-surface-raised, #1d1d1d);
+  --pne-surface-soft: var(--nz-surface-soft, #222222);
+  --pne-control: var(--nz-control, #282828);
+  --pne-text: var(--nz-text, #f3f3f3);
+  --pne-text-soft: var(--nz-text-soft, #a3a3a3);
+  --pne-text-faint: var(--nz-text-faint, #777777);
+  --pne-border: var(--nz-border, #313131);
+  --pne-border-strong: var(--nz-border-strong, #414141);
+  --pne-primary: var(--nz-text, #f3f3f3);
+  --pne-primary-foreground: var(--nz-surface, #181818);
+  --pne-focus-ring: rgba(243, 243, 243, 0.14);
+}
+
+.pne-modal.ui.modal {
+  border: 1px solid var(--pne-border) !important;
+  border-radius: var(--pne-radius-xl) !important;
+  background: var(--pne-surface-raised) !important;
+  box-shadow: var(--pne-shadow) !important;
+}
+
+.pne-modal.ui.modal > .header {
+  padding: 15px 18px 12px !important;
+  border-color: var(--pne-border) !important;
+  border-radius: var(--pne-radius-xl) var(--pne-radius-xl) 0 0 !important;
+  background: var(--pne-surface-raised) !important;
+  color: var(--pne-text) !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+.pne-modal.ui.modal > .content {
+  padding: 14px 18px 16px !important;
+  background: var(--pne-surface-raised) !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal.ui.modal > .actions {
+  display: flex;
+  padding: 10px 12px !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  border-color: var(--pne-border) !important;
+  border-radius: 0 0 var(--pne-radius-xl) var(--pne-radius-xl) !important;
+  background: var(--pne-surface-soft) !important;
+}
+
+.pne-modal .pne-hint {
+  margin: 0 0 12px;
+  color: var(--pne-text-soft);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.pne-modal .pne-field-hint {
+  margin-top: 5px;
+  color: var(--pne-text-faint);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.pne-modal .pne-menu.ui.tabular.menu {
+  min-height: 0;
+  margin: 0 0 8px !important;
+  padding: 4px !important;
+  gap: 2px;
+  border: 1px solid var(--pne-border) !important;
+  border-radius: var(--pne-radius-md) !important;
+  background: var(--pne-surface-soft) !important;
+  box-shadow: none !important;
+}
+
+.pne-modal .pne-menu.ui.menu .item {
+  min-height: 34px;
+  margin: 0 !important;
+  padding: 7px 10px !important;
+  border: 0 !important;
+  border-radius: var(--pne-radius-sm) !important;
+  background: transparent !important;
+  color: var(--pne-text-soft) !important;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.pne-modal .pne-menu.ui.menu .item::before {
+  display: none !important;
+}
+
+.pne-modal .pne-menu.ui.menu .item:hover {
+  background: var(--pne-surface) !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal .pne-menu.ui.menu .item.active {
+  background: var(--pne-primary) !important;
+  box-shadow: none !important;
+  color: var(--pne-primary-foreground) !important;
+}
+
+.pne-modal .pne-menu.ui.menu .item > .icon {
+  margin-right: 6px !important;
+  color: currentColor !important;
+}
+
+.pne-modal .pne-tab-body.ui.segment {
+  margin: 0 !important;
+  padding: 13px 14px !important;
+  border: 1px solid var(--pne-border) !important;
+  border-radius: var(--pne-radius-lg) !important;
+  background: var(--pne-surface) !important;
+  box-shadow: none !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal .pne-tab-body.is-disabled > form > :not(:first-child) {
+  opacity: 0.42;
+}
+
+.pne-modal .ui.form .field {
+  margin-bottom: 11px;
+}
+
+.pne-modal .ui.form .field:last-child {
+  margin-bottom: 0;
+}
+
+.pne-modal .ui.form .field > label,
+.pne-modal .ui.form .inline.fields > label {
+  margin-bottom: 6px;
+  color: var(--pne-text) !important;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.pne-modal .ui.form input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+.pne-modal .ui.form textarea,
+.pne-modal .ui.form select,
+.pne-modal .ui.selection.dropdown {
+  min-height: 38px;
+  border: 1px solid transparent !important;
+  border-radius: var(--pne-radius-md) !important;
+  background: var(--pne-control) !important;
+  box-shadow: none !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal .ui.form input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+.pne-modal .ui.form select {
+  padding-top: 9px !important;
+  padding-bottom: 9px !important;
+}
+
+.pne-modal .ui.form input::placeholder,
+.pne-modal .ui.form textarea::placeholder {
+  color: var(--pne-text-faint) !important;
+  opacity: 1;
+}
+
+.pne-modal .ui.form input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):focus,
+.pne-modal .ui.form textarea:focus,
+.pne-modal .ui.form select:focus,
+.pne-modal .ui.selection.dropdown.active,
+.pne-modal .ui.selection.dropdown:focus {
+  border-color: var(--pne-text) !important;
+  box-shadow: 0 0 0 3px var(--pne-focus-ring) !important;
+}
+
+.pne-modal .ui.dropdown .menu {
+  padding: 4px !important;
+  border: 1px solid var(--pne-border) !important;
+  border-radius: var(--pne-radius-md) !important;
+  background: var(--pne-surface-raised) !important;
+  box-shadow: var(--pne-shadow) !important;
+}
+
+.pne-modal .ui.dropdown .menu > .item {
+  min-height: 34px;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: var(--pne-radius-sm) !important;
+  background: transparent !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal .ui.dropdown .menu > .item:hover,
+.pne-modal .ui.dropdown .menu > .selected.item {
+  background: var(--pne-surface-soft) !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal .ui.checkbox label,
+.pne-modal .ui.checkbox + label {
+  color: var(--pne-text) !important;
+}
+
+.pne-modal .ui.checkbox input:checked ~ label::before {
+  border-color: var(--pne-primary) !important;
+  background: var(--pne-primary) !important;
+}
+
+.pne-modal .ui.checkbox input:checked ~ label::after {
+  color: var(--pne-primary-foreground) !important;
+}
+
+.pne-modal .pne-wheel-head {
+  margin-bottom: 5px;
+  color: var(--pne-text-faint);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pne-modal .pne-wheel-frame {
+  border: 1px solid var(--pne-border);
+  border-radius: var(--pne-radius-md);
+  background: var(--pne-control);
+}
+
+.pne-modal .pne-wheel-frame::before {
+  border-top-color: var(--pne-border-strong);
+  border-bottom-color: var(--pne-border-strong);
+  background: rgba(23, 23, 23, 0.035);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-wheel-frame::before {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-hint {
+  color: var(--pne-text-soft);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-field-hint,
+html[nz-theme="dark"] .pne-modal .pne-wheel-head {
+  color: var(--pne-text-faint);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-wheel-frame {
+  border-color: var(--pne-border);
+  background: var(--pne-control);
+}
+
+.pne-modal .pne-wheel-col + .pne-wheel-col {
+  border-left-color: var(--pne-border);
+}
+
+.pne-modal .pne-wheel-col li {
+  color: var(--pne-text-soft);
+  font-size: 0.9rem;
+}
+
+.pne-modal .pne-wheel-col li.is-adjacent {
+  color: var(--pne-text-soft);
+}
+
+.pne-modal .pne-wheel-col li.is-active {
+  color: var(--pne-text);
+  font-weight: 700;
+}
+
+html[nz-theme="dark"] .pne-modal .pne-wheel-col + .pne-wheel-col {
+  border-left-color: var(--pne-border);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-wheel-col li,
+html[nz-theme="dark"] .pne-modal .pne-wheel-col li.is-adjacent {
+  color: var(--pne-text-soft);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-wheel-col li.is-active {
+  color: var(--pne-text);
+}
+
+.pne-modal .pne-wheel-manual {
+  margin-top: 6px;
+}
+
+.pne-modal .pne-wheel-clear {
+  color: var(--pne-text-faint);
+}
+
+.pne-modal .pne-wheel-clear:hover {
+  background: var(--pne-surface-soft);
+  color: var(--pne-text);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-wheel-clear {
+  color: var(--pne-text-faint);
+}
+
+html[nz-theme="dark"] .pne-modal .pne-wheel-clear:hover {
+  background: var(--pne-surface-soft);
+  color: var(--pne-text);
+}
+
+.pne-modal .pne-preview-box[readonly] {
+  background: var(--pne-control) !important;
+  color: var(--pne-text-soft) !important;
+}
+
+.pne-modal > .actions > .ui.button {
+  min-height: 34px;
+  margin: 0 !important;
+  padding: 8px 13px !important;
+  border-radius: 999px !important;
+  font-size: 0.86rem;
+  font-weight: 650;
+  line-height: 1.2;
+  transform: none !important;
+}
+
+.pne-modal > .actions > .negative.deny.button {
+  border: 1px solid var(--pne-border-strong) !important;
+  background: var(--pne-surface-raised) !important;
+  box-shadow: none !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal > .actions > .pne-apply-btn {
+  border: 1px solid transparent !important;
+  background: var(--pne-control) !important;
+  box-shadow: none !important;
+  color: var(--pne-text) !important;
+}
+
+.pne-modal > .actions > .pne-save-btn {
+  border: 1px solid var(--pne-primary) !important;
+  background: var(--pne-primary) !important;
+  box-shadow: none !important;
+  color: var(--pne-primary-foreground) !important;
+}
+
+.pne-modal > .actions > .ui.button:hover {
+  filter: brightness(0.97);
+}
+
+html[nz-theme="dark"] .pne-modal > .actions > .ui.button:hover {
+  filter: brightness(1.08);
+}
+
+@media only screen and (max-width: 767px) {
+  .pne-modal.ui.modal > .content {
+    padding: 12px !important;
+  }
+
+  .pne-modal .pne-menu.ui.menu .item {
+    padding-right: 9px !important;
+    padding-left: 9px !important;
+  }
+
+  .pne-modal.ui.modal > .actions {
+    gap: 6px;
   }
 }

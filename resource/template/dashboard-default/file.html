@@ -37,49 +37,190 @@
     }
     </style>
 
-    <link rel="shortcut icon" type="image/png" href="/static/logo.svg?v20210804" />
+    <link rel="shortcut icon" type="image/png" href="{{if .Conf.Site.ConnectionLogoURL}}{{.Conf.Site.ConnectionLogoURL}}{{else if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg?v20210804{{end}}" />
     <!-- <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />  -->
     <link rel="stylesheet" href="/static/cdn/mdui@2/mdui.css" />
     <link href="/static/cdn/fonts/material-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260729v" />
     <script src="/static/cdn/mdui@2/mdui.global.js"></script>
 </head>
 <style>
+    :root {
+        --mdui-color-primary: var(--nz-text);
+        --mdui-color-on-primary: var(--nz-surface);
+        --mdui-color-primary-container: var(--nz-surface-soft);
+        --mdui-color-on-primary-container: var(--nz-text);
+        --mdui-color-secondary-container: var(--nz-surface-soft);
+        --mdui-color-on-secondary-container: var(--nz-text);
+        --mdui-color-background: var(--nz-canvas);
+        --mdui-color-on-background: var(--nz-text);
+        --mdui-color-surface: var(--nz-surface);
+        --mdui-color-surface-container: var(--nz-surface);
+        --mdui-color-surface-container-high: var(--nz-surface-soft);
+        --mdui-color-on-surface: var(--nz-text);
+        --mdui-color-on-surface-variant: var(--nz-text-soft);
+        --mdui-color-outline: var(--nz-border-strong);
+        --mdui-color-outline-variant: var(--nz-border);
+        --mdui-shape-corner-small: 8px;
+        --mdui-shape-corner-medium: 12px;
+        --mdui-shape-corner-large: 16px;
+        --mdui-shape-corner-extra-large: 20px;
+    }
+
     body {
-        font-family: 'Lato', sans-serif;
+        display: block;
+        min-width: 0;
+        overflow-x: hidden;
+        background: var(--nz-canvas) !important;
+        font-family:
+            Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
     }
 
     .file-list {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0;
         list-style-type: none;
-        padding: 0;
+        padding: 0 8px 8px;
     }
 
     .file-item {
-        margin: 5px 0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
         display: block;
         width: 100%;
+        min-height: 46px;
+        margin: 6px 0;
         box-sizing: border-box;
+        overflow: hidden;
+        border: 1px solid var(--nz-border);
+        border-radius: var(--nz-radius-lg);
+        background: var(--nz-surface);
+        color: var(--nz-text);
+        text-overflow: ellipsis;
+        transition:
+            border-color var(--nz-ease),
+            background-color var(--nz-ease);
+    }
+
+    .file-item:hover {
+        border-color: var(--nz-border-strong);
+        background: var(--nz-surface-soft);
     }
 
     #top-app-bar {
+        position: sticky;
+        z-index: 10;
+        top: 8px;
         display: flex;
+        min-height: 48px;
+        margin: 8px;
+        padding: 4px 6px;
+        box-sizing: border-box;
         align-items: center;
         justify-content: space-between;
-        padding: 10px;
+        border: 1px solid var(--nz-border);
+        border-radius: var(--nz-radius-lg);
+        background: color-mix(in srgb, var(--nz-surface) 92%, transparent);
+        box-shadow: var(--nz-shadow-sm);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
     }
 
     #current-directory {
-        font-size: 1rem;
-        font-weight: normal;
-        margin: 0 15px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: calc(100% - 100px);
+        max-width: calc(100% - 104px);
+        min-width: 0;
+        margin: 0 12px;
         box-sizing: border-box;
+        overflow: hidden;
+        color: var(--nz-text-soft);
+        font-size: 0.9rem;
+        font-variant-numeric: tabular-nums;
+        font-weight: 550;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    #top-app-bar mdui-button-icon {
+        width: 40px;
+        height: 40px;
+        border: 1px solid transparent;
+        border-radius: var(--nz-radius-md);
+        color: var(--nz-text);
+        transition:
+            border-color var(--nz-ease),
+            background-color var(--nz-ease);
+    }
+
+    #top-app-bar mdui-button-icon:hover {
+        border-color: var(--nz-border);
+        background: var(--nz-surface-soft);
+    }
+
+    mdui-menu {
+        padding: 4px;
+        border: 1px solid var(--nz-border);
+        border-radius: var(--nz-radius-lg);
+        background: var(--nz-surface-raised);
+        box-shadow: var(--nz-shadow-lg);
+    }
+
+    mdui-menu-item {
+        min-height: 38px;
+        border-radius: var(--nz-radius-sm);
+        color: var(--nz-text);
+    }
+
+    mdui-dialog {
+        --mdui-color-surface-container-high: var(--nz-surface-raised);
+        color: var(--nz-text);
+    }
+
+    mdui-text-field {
+        --mdui-color-primary: var(--nz-text);
+        width: 100%;
+    }
+
+    mdui-linear-progress {
+        --mdui-color-primary: var(--nz-text);
+        --mdui-color-secondary-container: var(--nz-surface-soft);
+        width: 100%;
+    }
+
+    @supports not (background: color-mix(in srgb, white 50%, transparent)) {
+        #top-app-bar {
+            background: var(--nz-surface);
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: dark;
+            --nz-canvas: #101010;
+            --nz-surface: #181818;
+            --nz-surface-raised: #1c1c1c;
+            --nz-surface-soft: #222222;
+            --nz-text: #f3f3f3;
+            --nz-text-soft: #a3a3a3;
+            --nz-border: #303030;
+            --nz-border-strong: #414141;
+            --mdui-color-on-primary: #171717;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #top-app-bar {
+            top: 6px;
+            margin: 6px;
+        }
+
+        .file-list {
+            padding: 0 6px 6px;
+        }
+
+        .file-item {
+            min-height: 44px;
+            margin: 5px 0;
+        }
     }
 </style>
 
