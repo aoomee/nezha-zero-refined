@@ -14,6 +14,7 @@ import (
 	"code.cloudfoundry.org/bytefmt"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/hashicorp/go-uuid"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 
@@ -29,6 +30,29 @@ import (
 
 var updateNoRoute func()
 
+const requestBodyLimit int64 = 8 << 20
+
+const webSocketConnectionLimit = 256
+
+var webSocketConnectionSlots = make(chan struct{}, webSocketConnectionLimit)
+
+func limitWebSocketConnections(c *gin.Context) {
+	if !websocket.IsWebSocketUpgrade(c.Request) {
+		c.Next()
+		return
+	}
+
+	select {
+	case webSocketConnectionSlots <- struct{}{}:
+		defer func() { <-webSocketConnectionSlots }()
+		c.Next()
+	default:
+		c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{
+			"error": "too many websocket connections",
+		})
+	}
+}
+
 // protectRequestBody 限制普通 HTTP 请求体，避免全局 ReadTimeout 中断 WebSocket 或 gRPC 长连接。
 func protectRequestBody(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -36,12 +60,12 @@ func protectRequestBody(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		if r.ContentLength > 1024768 {
+		if r.ContentLength > requestBodyLimit {
 			http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
 			return
 		}
 
-		r.Body = http.MaxBytesReader(w, r.Body, 1024768)
+		r.Body = http.MaxBytesReader(w, r.Body, requestBodyLimit)
 		responseController := http.NewResponseController(w)
 		if err := responseController.SetReadDeadline(time.Now().Add(30 * time.Second)); err == nil {
 			defer responseController.SetReadDeadline(time.Time{})
@@ -85,6 +109,7 @@ func ServeWeb(port uint) *http.Server {
 		log.Printf("NEZHA>> SetTrustedProxies error: %v", err)
 	}
 
+	r.Use(limitWebSocketConnections)
 	r.Use(natGateway)
 	tmpl := template.New("").Funcs(funcMap)
 	var err error
@@ -428,7 +453,11 @@ func natGateway(c *gin.Context) {
 		return
 	}
 
-	rpc.NezhaHandlerSingleton.CreateStream(streamId)
+	if err := rpc.NezhaHandlerSingleton.CreateStream(streamId); err != nil {
+		c.String(http.StatusServiceUnavailable, err.Error())
+		c.Abort()
+		return
+	}
 	defer rpc.NezhaHandlerSingleton.CloseStream(streamId)
 
 	taskData, err := utils.Json.Marshal(model.TaskNAT{
