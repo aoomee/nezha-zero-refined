@@ -556,6 +556,56 @@ html[nz-theme='dark'] #app .ui.accordion > .title {
   margin: 0 !important;
 }
 
+/* Optional horizontal server list. The choice is stored locally in the
+   visitor's browser, so it never changes another viewer's dashboard. */
+html.refined-list-layout #app .ui.four.stackable.status.cards {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 801px) {
+  html.refined-list-layout #app .status.cards > .ui.card > .content {
+    display: grid !important;
+    grid-template-columns: minmax(172px, 0.72fr) minmax(0, 2.28fr);
+    column-gap: 18px;
+    align-items: start;
+  }
+
+  html.refined-list-layout #app .status.cards .header {
+    grid-column: 1;
+    grid-row: 1;
+    padding-top: 1px;
+  }
+
+  html.refined-list-layout #app .status.cards .header > .ui.divider {
+    display: none;
+  }
+
+  html.refined-list-layout #app .status.cards .description {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  html.refined-list-layout #app .status.cards .description > .ui.grid {
+    display: grid !important;
+    grid-template-columns: 52px minmax(110px, 1fr) 52px minmax(110px, 1fr);
+    column-gap: 7px;
+    margin: 0 !important;
+  }
+
+  html.refined-list-layout #app .status.cards .wide.column,
+  html.refined-list-layout #app .status.cards .three.wide.column,
+  html.refined-list-layout #app .status.cards .thirteen.wide.column {
+    width: auto !important;
+    min-width: 0;
+    flex: none;
+  }
+
+  html.refined-list-layout #app .status.cards .wide.column {
+    min-height: 24px;
+  }
+}
+
 #app .status.cards > .ui.card,
 html[nz-theme='dark'] #app .status.cards > .ui.card {
   width: auto !important;

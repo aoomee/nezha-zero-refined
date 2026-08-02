@@ -19,6 +19,15 @@
             <a href="/service" class='item'><i class="rss icon"></i>{{tr "Services" }}</a>
             <a href="/network" class="item"><i class="bi bi-hdd-network icon"></i>{{tr "NetworkSpiter"}}</a>
         </template>
+        {{if eq .MatchedPath "/"}}
+            <div class="item ui dropdown refined-layout-switch" :class="{ simple: !isMobile }">
+                <div class="text"><i class="th large icon" style="margin-right:3px;"></i>布局<i class="dropdown icon" style="margin-right:0px;"></i></div>
+                <div class="menu">
+                    <a href="#" class="item" data-refined-layout="grid"><i class="grid layout icon"></i>卡片<i class="check icon"></i></a>
+                    <a href="#" class="item" data-refined-layout="list"><i class="list icon"></i>列表<i class="check icon"></i></a>
+                </div>
+            </div>
+        {{end}}
         {{ if not .Conf.DisableSwitchTemplateInFrontend }}        
             <div class="item ui dropdown" :class="{ simple: !isMobile }">
                 <div class="text"><i class="bi bi-incognito icon" style="margin-right:3px;"></i>{{tr "Template" }}<i class="dropdown icon" style="margin-right:0px;"></i></div>

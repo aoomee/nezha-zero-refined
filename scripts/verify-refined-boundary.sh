@@ -44,6 +44,8 @@ grep -Fq -- "--nz-accent:" "$CSS_PATH" || fail "design tokens are missing"
 grep -Fq ".refined-page-loader" "$CSS_PATH" || fail "homepage loader styles are missing"
 grep -Fq ".status.cards .ui.progress.fine .bar" "$CSS_PATH" || fail "status compatibility rule is missing"
 grep -Fq "@media (prefers-reduced-motion: reduce)" "$CSS_PATH" || fail "reduced-motion support is missing"
+grep -Fq "refined-list-layout" "$CSS_PATH" || fail "server list layout styles are missing"
+grep -Fq "data-refined-layout" "resource/template/theme-default/menu.html" || fail "server layout switch is missing"
 grep -Fq 'NZ_GRPCPORT: "80"' "$REFINED_COMPOSE" || fail "single-port gRPC is not configured"
 grep -Fq '"${NZ_HTTP_PORT:-10086}:80"' "$REFINED_COMPOSE" || fail "default host port 10086 is missing"
 if grep -Eq '^ *- "\$\{NZ_GRPC_PORT' "$REFINED_COMPOSE"; then
