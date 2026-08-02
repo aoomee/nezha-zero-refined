@@ -59,7 +59,7 @@ if [ "${1:-}" != "" ]; then
 
     unexpected=$(
         git diff --name-only "$base_ref"...HEAD |
-            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|install\.sh|refined-install\.sh|refined-update\.sh|cmd/dashboard/controller/(common_page|member_api)\.go|model/config\.go|resource/static/refined/.*|resource/static/public-note-editor\.css|resource/template/common/(header|menu)\.html|resource/template/dashboard-default/(file|login|redirect|server|setting|terminal)\.html|resource/template/theme-default/(header|home|menu|network|server-detail|service)\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
+            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|install\.sh|refined-install\.sh|refined-update\.sh|cmd/dashboard/controller/(common_page|member_api)\.go|model/config\.go|resource/static/refined/.*|resource/static/public-note-editor\.css|resource/template/common/(header|menu)\.html|resource/template/dashboard-default/(error|file|login|redirect|server|setting|terminal)\.html|resource/template/theme-default/(header|home|menu|network|server-detail|service|viewpassword)\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
             true
     )
 
