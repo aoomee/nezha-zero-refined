@@ -1,172 +1,157 @@
 <div align="center">
-  <img width="340" src="resource/static/brand.svg" alt="Nezha Monitoring">
+  <br>
+  <img width="360" style="max-width:80%" src="resource/static/brand.svg" title="哪吒监控 Nezha Monitoring">
+  <br><br>
+  <a href="https://railzen.github.io/nezha-zero" target="_blank"><img src="https://img.shields.io/badge/Docs-Available-orange?style=for-the-badge&logo=gitbook&logoColor=white" alt="查看上游文档"></a>
+  <a href="https://github.com/railzen/nezha-zero" target="_blank"><img alt="GitHub release" src="https://img.shields.io/github/v/release/railzen/nezha-zero?color=brightgreen&style=for-the-badge&logo=github&label=Dashboard"></a>
+  <a href="https://github.com/nezhahq/nezha" target="_blank"><img src="https://img.shields.io/badge/NEZHA-NAIBA-blue?logo=github&style=for-the-badge" alt="访问哪吒仓库"></a>
+  <br><br>
+  <p><b>Nezha Monitoring: Self-hostable, lightweight, servers and websites monitoring tool.</b></p>
+  <p>Supports <b>monitoring</b> system status, HTTP, TCP, Ping, <b>push alerts</b> and <b>web terminal</b>.</p>
+</div>
 
-# Nezha Zero Refined
-
-柔和、简约、响应式的哪吒 V0 美化发行版。<br>
-保留 `railzen/nezha-zero` 的完整功能，并自动跟随上游更新。
+> Nezha Zero Refined 是基于 [railzen/nezha-zero](https://github.com/railzen/nezha-zero) 的美化发行版：保留上游功能与数据兼容性，仅为前台、登录与管理后台增加一层独立的简约视觉设计。
 
 [![Refined CI](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-ci.yml/badge.svg)](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-ci.yml)
 [![Publish image](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-image.yml/badge.svg)](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-image.yml)
 [![Sync upstream](https://github.com/aoomee/nezha-zero-refined/actions/workflows/sync-upstream.yml/badge.svg)](https://github.com/aoomee/nezha-zero-refined/actions/workflows/sync-upstream.yml)
-[![License](https://img.shields.io/github/license/aoomee/nezha-zero-refined)](LICENSE)
 
-![Nezha Zero Refined 首页预览](docs/images/preview.jpg)
-</div>
+## 概要 / Abstract
 
-## 这是什么
+本项目基于哪吒 V0 版本进行二次开发，并持续合并上游 `main`。除保留原项目的特性外，Refined 额外提供：
 
-Nezha Zero Refined 是 [railzen/nezha-zero](https://github.com/railzen/nezha-zero) 的非官方美化发行版。它保留上游 Dashboard、Agent、数据库、API、WebSocket、gRPC、登录、告警、任务、终端等核心功能，主要通过最后加载的独立视觉层重新设计默认前台、登录页和管理后台；仅额外增加 Logo 配置绑定，方便在后台替换站点图标。
+- 前台、登录页、管理后台统一的简约界面；卡片、表单、弹窗、导航与终端入口保持一致。
+- 首页加载动画、紧凑的信息排版、移动端适配，以及更平静的交互反馈。
+- 后台可设置站点 Logo 与连接页 Logo；留空时保持默认图标。
+- 多架构镜像：`amd64`、`arm64`、`s390x`。
+- Docker 一键安装、健康检查、失败回滚和每日上游同步。
 
-本项目追求三件事：
+原项目的主要能力继续保留：
 
-- **功能不变**：不改变监控逻辑、Agent 协议、API 行为、数据库兼容性或 WebSocket/gRPC 通道。
-- **开箱即用**：提供多架构容器镜像、自动生成安全凭据和 Docker Compose 部署。
-- **持续跟随上游**：每天合并上游 `main`；只有边界检查、Dashboard 测试、Agent 测试和构建全部通过才会发布。
+- 最新 GEOIP 库和管理界面安装 Agent 的链接。
+- 修复部分失效 CDN 引用，管理后台静态文件本地化。
+- 支持密码登录、二次认证 2FA、IPv4 复制按钮、手动国家码/国旗、公开备注可视化编辑与设备自动发现。
+- 支持使用外部 GEOIP 库查询国家信息，以及有限的移动端优化。
 
-## 设计特点
+#### 稳定性与兼容性
 
-- 柔和的灰绿中性色，不刺眼、不堆叠高饱和装饰。
-- 卡片、表格、表单、弹窗、导航和后台页面保持统一。
-- 自动跟随系统浅色/深色模式。
-- 4 / 3 / 2 / 1 列响应式服务器卡片，适配桌面、平板和手机。
-- 清晰的在线、警告、故障和离线状态，不牺牲信息密度。
-- 完整键盘焦点样式、44px 移动端触控目标和减少动效支持。
-- 不加载新的外部字体或前端运行时。
+- Dashboard 升级尽量保证历史版本 Agent 可用，不强制升级 Agent。
+- 兼容上游数据目录和数据库，已有部署可迁移。
+- 上游自动同步须通过边界检查、Dashboard/Agent 测试和镜像冒烟测试后才发布。
 
-## 30 秒部署
+## 一键安装 / Install
 
-需要已安装 Docker Engine 与支持 `up --wait` 的较新 Docker Compose v2。Debian / Ubuntu 可以直接执行：
+Debian / Ubuntu 服务器可直接执行：
 
-```bash
+```shell
 curl -fsSL https://raw.githubusercontent.com/aoomee/nezha-zero-refined/main/install.sh | sudo sh
 ```
 
-它会安装 Git（如缺失）、把项目放在 `/opt/nezha-zero-refined`，并启动安装流程。已经克隆项目的用户仍可在项目目录执行 `./refined-install.sh`。
+脚本会在需要时安装 Git、Docker Engine 与 Docker Compose v2，将项目安装到 `/opt/nezha-zero-refined`，自动生成管理员密码和 Agent 发现密钥，并启动面板。
 
-脚本会：
+- 默认网页端口：`10086`
+- 默认 Agent RPC 端口：`10086`（HTTP 与 gRPC 共用一个端口）
+- 默认管理员：`admin`
+- 首次安装的密码会显示在终端，同时保存在 `/opt/nezha-zero-refined/.env`
 
-1. 生成仅当前用户可读的 `.env`；
-2. 随机生成管理员密码和 Agent 发现密钥；
-3. 拉取 `amd64`、`arm64` 或 `s390x` 对应镜像；
-4. 启动 Dashboard，并在终端中显示首次登录信息。
+需要 Nginx + Cloudflare 单端口 gRPC 时，请查看 [Debian + Nginx + Cloudflare 教程](docs/debian-nginx-cloudflare.md)。
 
-默认访问地址为 `http://服务器IP:10086`，默认管理员为 `admin`。首次输出的密码也会保存在 `.env`，请妥善保管。
+镜像地址：
 
-> 公网部署前，请配置反向代理与 HTTPS。Dashboard HTTP 与 Agent gRPC 默认共用 `10086`，与上游单端口教程兼容。
-
-## 更新
-
-```bash
-cd /opt/nezha-zero-refined
-./refined-update.sh
+```shell
+ghcr.io/aoomee/nezha-zero-refined:latest
 ```
 
-更新前，脚本会停止 Dashboard 并将一致的数据快照保存到 `./backups`。新容器必须在 180 秒内通过健康检查；否则脚本会恢复旧镜像与旧数据，并把失败版本的数据留在 `data.failed.*` 供排查。
+## 一键迁移 / Migrate
 
-## 自定义部署参数
+本项目保留上游数据目录格式。迁移前请停止旧容器并备份原数据，再执行：
 
-安装脚本生成的 `.env` 包含以下配置：
-
-| 变量 | 默认值 | 说明 |
-| --- | --- | --- |
-| `REFINED_IMAGE` | `ghcr.io/aoomee/nezha-zero-refined:latest` | 要部署的镜像，可固定到 `sha-*` |
-| `NZ_ADMIN` | `admin` | 密码登录管理员用户名 |
-| `NZ_ADMIN_PASSWORD` | 自动生成 | 管理员密码 |
-| `NZ_SITE_NAME` | `Nezha Monitoring` | 站点名称 |
-| `NZ_HTTP_PORT` | `10086` | 主机 HTTP 端口 |
-| `NZ_GRPC_PORT` | `10086` | 主机 Agent gRPC 端口；必须与 HTTP 端口相同 |
-| `NZ_GRPC_HOST` | 空 | Agent 连接的公网域名或 IP |
-| `NZ_GRPC_SECRET` | 自动生成 | Agent 自动发现密钥 |
-| `TZ` | `Asia/Shanghai` | 时区 |
-
-`REFINED_IMAGE`、`NZ_HTTP_PORT` 和 `NZ_GRPC_PORT` 是持续生效的部署参数。其余 `NZ_*` 值用于空数据目录的首次引导；首次启动后，`data/config.yaml` 是应用配置的事实来源，请在 Dashboard 设置页修改站点、登录和 Agent 参数。
-
-也可以手动部署：
-
-```bash
-cp .env.example .env
-# 编辑 .env，替换所有 Change-* 示例值
-docker compose --env-file .env -f compose.refined.yaml up -d
-```
-
-Agent 的域名、TLS 和代理端口仍在 Dashboard 的设置页配置，行为与上游一致。
-
-## 从现有 Nezha Zero 迁移
-
-本项目使用完整上游代码和相同的数据目录格式。迁移前请先停止旧容器并备份原来的 `data` 目录，然后将其复制到本项目根目录：
-
-```bash
-docker compose down
+```shell
+git clone https://github.com/aoomee/nezha-zero-refined.git
+cd nezha-zero-refined
 cp -a /path/to/old-nezha/data ./data
 ./refined-install.sh
 ```
 
-不要同时让新旧 Dashboard 写入同一个 SQLite 数据库。若来源版本较旧，建议先阅读 [上游文档](https://railzen.github.io/nezha-zero) 与发布说明。
+不要同时让新旧 Dashboard 写入同一个 SQLite 数据库。迁移后，登录后台检查站点、Agent 域名和 TLS 设置即可。
 
-## 如何保证功能性不变
+## 兼容 API / Compatible API
 
-Refined 的核心运行逻辑与上游保持一致。改动范围被限制在视觉入口、样式文件、开箱即用部署文件，以及用于替换 Logo 的轻量配置绑定：
+合并了哪吒 V1 版本的部分读取功能 API。目前支持：
 
-| 层 | 文件 | 作用 |
+- 前台界面的所有 API（包括 WebSocket）。
+- 后台界面的部分只读 API。
+- 服务器、告警、通知的信息获取。
+- [Nezha-Mobile](https://github.com/hiDandelion/Nezha-Mobile) 的大部分只读功能。
+- 开启和关闭 V1 版本 API。
+
+关于鉴权：
+
+- 密码登录默认开启，管理员用户名与 OAuth 管理员列表共用；密码可在设置界面修改。
+- 支持 V1 `/api/v1/login` 接口登录。
+- 支持 Cookie `nz-jwt`、`Authorization: Bearer <API Key>`、`Authorization: <API Key>` 三种 API Key 认证方式。
+
+## 界面预览 / Screenshots
+
+#### Refined
+
+![Nezha Zero Refined 首页预览](docs/images/preview.jpg)
+
+前台、登录页、设置、日志、终端与文件管理入口均使用同一套圆角、间距、颜色与按钮规则。站点和连接页 Logo 可在设置页直接替换。
+
+#### Dashboard
+
+| Dashboard | Login Panel |
+| --- | --- |
+| <img src="agent/web/LookGlass_0_20_21.jpg" width="1200px"/> | <img src="https://cdn.nodeimage.com/i/2z2oUCGnwRz5wtJn17Y2KaJLHm2CwN96.webp" width="1200px"/> |
+
+| ServerStatus | DayNight | hotaru |
 | --- | --- | --- |
-| 前台入口 | `resource/template/theme-default/header.html` | 在上游样式之后加载 Refined CSS |
-| 公共入口 | `resource/template/common/header.html` | 让登录页与管理后台加载同一视觉层 |
-| 视觉层 | `resource/static/refined/`、`resource/static/public-note-editor.css` | 颜色、间距、圆角、排版、加载动画和响应式布局 |
-| 管理入口 | `resource/template/dashboard-default/setting.html`、`cmd/dashboard/controller/member_api.go`、`model/config.go` | 保存站点 Logo 与连接页 Logo 配置 |
+| ![默认主题魔改](resource/template/theme-server-status/screenshot.jpg) | <img src="resource/template/theme-daynight/screenshot.png" width="900px"/> | <img src="resource/template/theme-hotaru/screenshot.png" width="900px"/> |
 
-没有修改：
+| Neko Mdui | AngelKanade | Default Theme |
+| --- | --- | --- |
+| ![Neko Mdui](resource/template/theme-mdui/screenshot.png) | ![AngelKanade](resource/template/theme-angel-kanade/screenshot.png) | ![Default Theme](resource/template/theme-default/screenshot.png) |
 
-- Dashboard 或 Agent 的监控采集、告警、任务和终端逻辑；
-- Vue、jQuery、WebSocket 与监控图表数据逻辑；
-- API 行为、gRPC、Proto、数据库迁移和 Agent 协议；
-- 登录加密、CSRF、表单字段、通知、任务与终端逻辑。
+面板安装后可在设置页（`/setting`）切换语言与主题。
 
-CI 会分别执行：
+## 备注和公开备注 / Public Note
 
-```bash
-go test ./...
-go build ./cmd/dashboard
-(cd agent && go test -skip TestCloudflareDetection ./...)
-(cd agent && go build ./cmd/agent)
+支持在公开备注中展示到期时间和手动国家码。完整格式请参考 [账单信息备注](https://github.com/nezhahq/nezha/pull/425#issuecomment-2389107872)：
+
+```html
+{
+  "billingDataMod": {
+    "startDate": "2025-10-01",
+    "endDate": "2027-01-01"
+  },
+  "countryCode": "HK"
+}
 ```
 
-此外，[边界守卫](scripts/verify-refined-boundary.sh) 会阻止自动同步意外改动 Refined 允许范围以外的文件。
+`endDate` 可写 `0000-00-00` 表示长期。管理后台提供公开备注可视化编辑，可直接写入对应数据。
 
-## 如何跟随上游，同时保护美化
+## 更新与上游同步 / Update
 
-每天的 [Sync upstream](.github/workflows/sync-upstream.yml) 工作流会：
+手动更新：
 
-1. 获取 `railzen/nezha-zero:main`；
-2. 创建普通 Git 合并，保留上游完整历史；
-3. 验证 Refined 样式入口和代码边界；
-4. 测试并构建 Dashboard；
-5. 单独测试 Agent 模块；
-6. 构建容器并真实启动，检查首页与 Refined 静态资源；
-7. 仅在全部成功后推送 `main`，随后发布新镜像。
-
-如果上游改动与视觉层冲突，或任何测试失败，工作流不会强行覆盖文件，也不会推送半成品；它会创建带有 `upstream-sync` 标签的 Issue，等待人工适配。若源码推送后仅镜像发布遇到临时故障，下次定时任务会识别缺少的 `sha-*` 镜像并重试。这样可以同时获得上游修复与稳定的 Refined 设计。
-
-当前 Refined 初始基线为上游提交 [`fceac6e`](https://github.com/railzen/nezha-zero/commit/fceac6ed1425cf6ab254c3e2a92b21f58897de06)。
-
-## 本地开发
-
-需要 Go `1.26.x`。
-
-```bash
-go test ./...
-go build ./cmd/dashboard
-./scripts/verify-refined-boundary.sh
+```shell
+cd /opt/nezha-zero-refined
+./refined-update.sh
 ```
 
-所有 UI 调整应继续放在 `resource/static/refined/`，不要复制或重写上游业务模板。这样能显著降低后续同步冲突。
+更新前脚本会创建数据备份；新容器未通过健康检查时会自动恢复旧镜像与旧数据。项目每天同步上游 `main`，仅在测试、构建和镜像冒烟测试全部通过后才发布新版镜像，因此美化层不会被上游同步直接覆盖。
 
-## 上游、致谢与许可证
+## 关于安全 / Security
 
-本项目不是哪吒监控官方发行版。核心功能、安装脚本与原始主题来自：
+面板安全问题始终优先处理。上游同步中的安全修复会进入本项目，并须通过 Dashboard 与 Agent 测试后发布。若发现安全问题，欢迎及时提交 Issue。
 
-- [railzen/nezha-zero](https://github.com/railzen/nezha-zero)
-- [nezhahq/nezha](https://github.com/nezhahq/nezha)
-- 上游 README 中列出的主题与兼容 API 贡献者
+## 致谢 / Acknowledgements
 
-项目继续遵循 [Apache License 2.0](LICENSE)。使用与分发时请保留原始许可证和上游署名。
+- [railzen/nezha-zero](https://github.com/railzen/nezha-zero): Nezha Zero 上游项目
+- [nezhahq/nezha](https://github.com/nezhahq/nezha): 原版哪吒面板
+- [chenx-dust/nezha-compat](https://github.com/chenx-dust/nezha-compat): V1 API 兼容实现
+- [hamster1963/nezha-dash](https://github.com/hamster1963/nezha-dash): 前台主题实现
+- [hi2shark/nazhua](https://github.com/hi2shark/nazhua): 前台主题实现
+
+本项目遵循 [Apache License 2.0](LICENSE)，使用与分发时请保留原始许可证和上游署名。

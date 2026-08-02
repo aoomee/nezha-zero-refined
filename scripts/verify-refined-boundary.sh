@@ -9,6 +9,7 @@ CSS_PATH="resource/static/refined/refined.css"
 LOADER_PATH="resource/static/refined/refined-loader.js"
 COMMON_HEADER="resource/template/common/header.html"
 PUBLIC_HEADER="resource/template/theme-default/header.html"
+REFINED_COMPOSE="compose.refined.yaml"
 STANDALONE_TEMPLATES="
 resource/template/dashboard-default/file.html
 resource/template/dashboard-default/redirect.html
@@ -43,6 +44,11 @@ grep -Fq -- "--nz-accent:" "$CSS_PATH" || fail "design tokens are missing"
 grep -Fq ".refined-page-loader" "$CSS_PATH" || fail "homepage loader styles are missing"
 grep -Fq ".status.cards .ui.progress.fine .bar" "$CSS_PATH" || fail "status compatibility rule is missing"
 grep -Fq "@media (prefers-reduced-motion: reduce)" "$CSS_PATH" || fail "reduced-motion support is missing"
+grep -Fq 'NZ_GRPCPORT: "80"' "$REFINED_COMPOSE" || fail "single-port gRPC is not configured"
+grep -Fq '"${NZ_HTTP_PORT:-10086}:80"' "$REFINED_COMPOSE" || fail "default host port 10086 is missing"
+if grep -Eq '^ *- "\$\{NZ_GRPC_PORT' "$REFINED_COMPOSE"; then
+    fail "single-port deployment must not publish a second gRPC port"
+fi
 
 if [ "${1:-}" != "" ]; then
     base_ref=$1
