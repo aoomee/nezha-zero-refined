@@ -1,12 +1,12 @@
 <div align="center">
-  <br>
-  <img width="88" src="resource/static/brand.svg" title="哪吒监控 Nezha Monitoring">
-  <h1>Nezha Zero Refined</h1>
-  <p>轻量、自托管的服务器与网站监控 · 简约界面发行版</p>
+  <br><br>
+  <img width="128" src="resource/static/brand.svg" title="哪吒监控 Nezha Monitoring">
+  <h1>Nezha Zero <sub>Refined</sub></h1>
+  <p><b>轻量、自托管的服务器与网站监控</b></p>
+  <p>为前台与管理后台重新整理的一层安静、克制的界面。</p>
   <p>
-    <a href="#一键安装--install">安装</a> ·
-    <a href="#界面预览--screenshots">预览</a> ·
-    <a href="docs/debian-nginx-cloudflare.md">部署教程</a> ·
+    <a href="#一键安装--install">一键安装</a>&nbsp;&nbsp;·&nbsp;&nbsp;
+    <a href="docs/debian-nginx-cloudflare.md">部署教程</a>&nbsp;&nbsp;·&nbsp;&nbsp;
     <a href="https://github.com/railzen/nezha-zero">上游项目</a>
   </p>
   <p>
@@ -14,6 +14,9 @@
     <a href="https://github.com/aoomee/nezha-zero-refined/pkgs/container/nezha-zero-refined"><img src="https://img.shields.io/badge/image-GHCR-24292f?style=flat-square&logo=docker" alt="容器镜像"></a>
     <a href="https://github.com/aoomee/nezha-zero-refined/blob/main/LICENSE"><img src="https://img.shields.io/github/license/aoomee/nezha-zero-refined?style=flat-square" alt="许可证"></a>
   </p>
+  <br>
+  <img width="1100" src="docs/images/preview.jpg" alt="Nezha Zero Refined 首页预览">
+  <br><br>
 </div>
 
 > 基于 [railzen/nezha-zero](https://github.com/railzen/nezha-zero)。保留上游功能与数据兼容性，仅为前台、登录与管理后台增加独立的简约视觉设计。
@@ -94,10 +97,6 @@ cp -a /path/to/old-nezha/data ./data
 - 支持 Cookie `nz-jwt`、`Authorization: Bearer <API Key>`、`Authorization: <API Key>` 三种 API Key 认证方式。
 
 ## 界面预览 / Screenshots
-
-#### Refined
-
-![Nezha Zero Refined 首页预览](docs/images/preview.jpg)
 
 前台、登录页、设置、日志、终端与文件管理入口均使用同一套圆角、间距、颜色与按钮规则。站点和连接页 Logo 可在设置页直接替换。
 
