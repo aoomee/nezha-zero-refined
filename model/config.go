@@ -191,7 +191,7 @@ func (c *Config) Read(path string) error {
 	}
 
 	if c.Site.Brand == "" {
-		c.Site.Brand = "Nezha Monitoring"
+		c.Site.Brand = "Nezha Zero"
 	}
 
 	if c.Site.CookieName == "" || c.Site.CookieName == "nezha-dashboard" {

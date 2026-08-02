@@ -55,6 +55,7 @@ func (cp *commonPage) serve() {
 		AbortWhenFail: true,
 	}))
 	cr.GET("/", cp.home)
+	cr.GET("/server/:id", cp.serverDetail)
 	cr.GET("/service", cp.service)
 	// TODO: 界面直接跳转使用该接口
 	cr.GET("/network/:id", cp.network)
@@ -388,6 +389,80 @@ func (cp *commonPage) home(c *gin.Context) {
 	}
 	c.HTML(http.StatusOK, mygin.GetPreferredTheme(c, "/home"), mygin.CommonEnvironment(c, gin.H{
 		"Servers": string(stat),
+	}))
+}
+
+func (cp *commonPage) serverDetail(c *gin.Context) {
+	serverID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil || serverID == 0 {
+		mygin.ShowErrorPage(c, mygin.ErrInfo{
+			Code:  http.StatusNotFound,
+			Title: "服务器不存在",
+			Msg:   "没有找到对应的服务器",
+			Link:  "/",
+			Btn:   "返回首页",
+		}, true)
+		return
+	}
+
+	_, isMember := c.Get(model.CtxKeyAuthorizedUser)
+	_, isViewPasswordVerified := c.Get(model.CtxKeyViewPasswordVerified)
+	authorized := isMember || isViewPasswordVerified
+
+	singleton.SortedServerLock.RLock()
+	serverList := singleton.SortedServerList
+	if !authorized {
+		serverList = singleton.SortedServerListForGuest
+	}
+
+	var selectedServer *model.Server
+	for _, server := range serverList {
+		if server.ID != serverID {
+			continue
+		}
+
+		item := *server
+		host, state, lastActive, prevIn, prevOut := server.RuntimeSnapshot()
+		item.Host = host
+		item.State = state
+		item.LastActive = lastActive
+		item.PrevTransferInSnapshot = prevIn
+		item.PrevTransferOutSnapshot = prevOut
+		selectedServer = &item
+		break
+	}
+	singleton.SortedServerLock.RUnlock()
+
+	if selectedServer == nil {
+		mygin.ShowErrorPage(c, mygin.ErrInfo{
+			Code:  http.StatusNotFound,
+			Title: "服务器不存在",
+			Msg:   "服务器不存在或当前无权查看",
+			Link:  "/",
+			Btn:   "返回首页",
+		}, true)
+		return
+	}
+
+	serversBytes, err := utils.Json.Marshal(Data{
+		Now:     time.Now().Unix() * 1000,
+		Servers: []*model.Server{selectedServer},
+	})
+	if err != nil {
+		mygin.ShowErrorPage(c, mygin.ErrInfo{
+			Code:  http.StatusInternalServerError,
+			Title: "服务器详情加载失败",
+			Msg:   "无法读取服务器状态，请稍后重试",
+			Link:  "/",
+			Btn:   "返回首页",
+		}, true)
+		return
+	}
+
+	c.HTML(http.StatusOK, "theme-default/server-detail", mygin.CommonEnvironment(c, gin.H{
+		"Title":    selectedServer.Name,
+		"Servers":  string(serversBytes),
+		"ServerID": serverID,
 	}))
 }
 

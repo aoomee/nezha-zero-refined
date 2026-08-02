@@ -2,7 +2,7 @@
 {{template "theme-default/header" .}}
 {{if ts .CustomCode}} {{.CustomCode|safe}} {{end}}
 {{template "theme-default/menu" .}}
-<div class="nb-container">
+<div class="nb-container refined-home-page">
     <div class="ui container">
         <template v-if="groups">
             <div class="ui styled fluid accordion" v-for="group in groups">
@@ -11,12 +11,39 @@
                     @#(group.Tag!==''?group.Tag:'{{tr "Default"}}')#@
                 </div>
                 <div class="active content">
+                    <!-- The compact view is intentionally a real monitoring table,
+                         rather than stretched cards. Cards remain available through
+                         the layout selector above. -->
+                    <div class="refined-server-list" aria-label="服务器列表">
+                        <div class="refined-server-list__scroll">
+                            <div class="refined-server-list__head">
+                                <span>状态</span><span>名称</span><span>系统</span><span>位置</span><span>在线</span><span>负载</span><span>网速 ↓ / ↑</span><span>流量 ↓ / ↑</span><span>CPU</span><span>内存</span><span>硬盘</span>
+                            </div>
+                            <div v-for="server in group.data" :key="`list-${server.ID}`" class="refined-server-list__row" :class="{ 'is-offline': !server.live }" v-if="server.Host" role="link" tabindex="0" @click="openServerDetail(server.ID)" @keydown.enter="openServerDetail(server.ID)">
+                                <span class="refined-list-status" :class="{ 'is-live': server.live }" :title="server.live ? '在线' : '离线'"></span>
+                                <span class="refined-list-name">
+                                    <i v-if="server.Host.CountryCode" :class="'fi fi-' + server.Host.CountryCode"></i>
+                                    <span>@#server.Name#@</span>
+                                    <small v-if="!server.live">[{{tr "Offline"}}]</small>
+                                </span>
+                                <span class="refined-list-system">@#server.Host.Platform || '-'#@</span>
+                                <span class="refined-list-location"><i v-if="server.Host.CountryCode" :class="'fi fi-' + server.Host.CountryCode"></i>@#server.Host.CountryCode ? server.Host.CountryCode.toUpperCase() : '-'#@</span>
+                                <span>@#secondToDate(server.State.Uptime)#@</span>
+                                <span>@#toFixed2(server.State.Load1)#@</span>
+                                <span class="refined-list-pair">@#formatByteSize(server.State.NetInSpeed)#@/s <b>/</b> @#formatByteSize(server.State.NetOutSpeed)#@/s</span>
+                                <span class="refined-list-pair">@#formatByteSize(server.State.NetInTransfer)#@ <b>/</b> @#formatByteSize(server.State.NetOutTransfer)#@</span>
+                                <span :class="formatPercent(server.live,server.State.CPU, 100).class + ' refined-list-progress'"><i :style="formatPercent(server.live,server.State.CPU, 100).style"></i><small>@#parseInt(server.State.CPU?server.State.CPU:0)#@%</small></span>
+                                <span :class="formatPercent(server.live,server.State.MemUsed, server.Host.MemTotal).class + ' refined-list-progress'"><i :style="formatPercent(server.live,server.State.MemUsed, server.Host.MemTotal).style"></i><small>@#parseInt(server.Host.MemTotal?server.State.MemUsed/server.Host.MemTotal*100:0)#@%</small></span>
+                                <span :class="formatPercent(server.live,server.State.DiskUsed, server.Host.DiskTotal).class + ' refined-list-progress'"><i :style="formatPercent(server.live,server.State.DiskUsed, server.Host.DiskTotal).style"></i><small>@#parseInt(server.Host.DiskTotal?server.State.DiskUsed/server.Host.DiskTotal*100:0)#@%</small></span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="ui four stackable status cards">
-                        <div v-for="server in group.data" :id="server.ID" class="ui card">
+                        <div v-for="server in group.data" :id="server.ID" class="ui card refined-server-card-link" role="link" tabindex="0" @click="openServerDetail(server.ID)" @keydown.enter="openServerDetail(server.ID)">
                             <div class="content" v-if="server.Host" style="margin-top: 10px; padding-bottom: 5px">
                                 <div class="header">
                                     <span class="refined-server-title">
-                                        <i :class="'fi fi-' + server.Host.CountryCode"></i>
+                                        <i v-if="server.Host.CountryCode" :class="'fi fi-' + server.Host.CountryCode"></i>
                                         <template v-if="shouldShowPlatformLogo(server.Host.Platform)">
                                             <i v-if='isWindowsPlatform(server.Host.Platform)' class="windows icon"></i>
                                             <i v-else-if='getFontLogoClass(server.Host.Platform) == "" && server.State.Uptime > 0' class="fl-tux"></i>
@@ -24,59 +51,6 @@
                                         </template>
                                         <span class="refined-server-name">@#server.Name + (server.live?'':'[{{tr "Offline"}}]')#@</span>
                                     </span>
-                                    <i @click="togglePopup($event, server.ID)" aria-expanded="false" class="nezha-secondary-font info circle icon"></i>
-                                    <div class="ui content popup" :class="{ 'visible': isActive(server.ID) }" style="margin-bottom: 0;">
-                                        <i class="closePopup window close icon" @click="closePopup(server.ID)"></i>
-                                        {{tr "Platform"}}: @#server.Host.Platform#@-@#server.Host.PlatformVersion#@
-                                        [<span v-if="server.Host.Virtualization">@#server.Host.Virtualization#@:</span>@#server.Host.Arch#@]
-                                        <br />
-                                        CPU: @#server.Host.CPU#@
-                                        <br />
-                                        <template v-if="server.Host.GPU">
-                                            GPU: @#server.Host.GPU#@
-                                            <br />
-                                        </template>
-                                        {{tr "DiskUsed"}}:
-                                        @#formatByteSize(server.State.DiskUsed)#@/@#formatByteSize(server.Host.DiskTotal)#@
-                                        <br />
-                                        {{tr "MemUsed"}}:
-                                        @#formatByteSize(server.State.MemUsed)#@/@#formatByteSize(server.Host.MemTotal)#@
-                                        <br />
-                                        {{tr "SwapUsed"}}:
-                                        <template v-if="server.Host.SwapTotal === 0">OFF</template>
-                                        <template v-else>@#formatByteSize(server.State.SwapUsed)#@/@#formatByteSize(server.Host.SwapTotal)#@</template>
-                                        <br />
-                                        {{tr "NetTransfer"}}:
-                                        <i class="arrow alternate circle down outline icon"></i>@#formatByteSize(server.State.NetInTransfer)#@
-                                        <i class="arrow alternate circle up outline icon"></i>@#formatByteSize(server.State.NetOutTransfer)#@
-                                        <br />
-                                        {{tr "Load"}}: @#toFixed2(server.State.Load1)#@/@#toFixed2(server.State.Load5)#@/@#
-                                        toFixed2(server.State.Load15)#@
-                                        <br />
-                                        {{tr "ProcessCount"}}: @#server.State.ProcessCount#@
-                                        <br />
-                                        {{tr "ConnCount"}}: TCP @#server.State.TcpConnCount#@ / UDP @#server.State.UdpConnCount#@
-                                        <br />
-                                        {{tr "BootTime"}}: @#formatTimestamp(server.Host.BootTime)#@
-                                        <br />
-                                        {{tr "LastActive"}}: @#new Date(server.LastActive).toLocaleString()#@
-                                        <br />
-                                        <div v-if="server.State.Temperatures && getTemperature(server.State.Temperatures, sensorList) > 0" class="temp-detail" @click="toggleDetailedTemp(server.ID)" :id="`temp-${server.ID}`" temp-detail-show="0">
-                                            {{tr "Temperature"}}: 
-                                            <span :id="`temp-main-${server.ID}`">
-                                                @#getTemperature(server.State.Temperatures, sensorList)#@°C
-                                                <i class="bi bi-chevron-double-down"></i>
-                                            </span>
-                                            <span :id="`temp-detail-${server.ID}`" style="display:none">
-                                                <span v-for="temp in server.State.Temperatures" :key="temp.Name" v-if="temp.Temperature !== 0">
-                                                    [ @#temp.Name#@: @#temp.Temperature#@°C ]
-                                                </span>
-                                                <i class="bi bi-chevron-double-up"></i>
-                                            </span>
-                                        </div>
-                                        {{tr "Version"}}: @#server.Host.Version#@
-                                        <div class="chartbox" :key="server.ID" :ref="`chart${server.ID}`" style="width: 100%; height: auto; margin-bottom: 2px;"></div>
-                                    </div>
                                     <div class="ui divider" style="margin-bottom: 5px"></div>
                                 </div>
                                 <div class="description">
@@ -131,7 +105,7 @@
                                         <div class="three wide column">{{tr "Stat"}}</div>
                                         <div class="thirteen wide column">
                                             <div class="refined-metrics refined-metrics--three">
-                                                <span class="refined-metric"><i class="bi bi-cpu-fill" style="font-size: 1.1rem; color: #4a86e8;"></i><span>@#getCoreAndGHz(server.Host.CPU)#@</span></span>
+                                                <span class="refined-metric"><i class="bi bi-cpu-fill" style="font-size: 1.1rem; color: #4a86e8;"></i><span>@#getCoreAndGHz(server.Host.CPU) || '—'#@</span></span>
                                                 <span class="refined-metric"><i class="bi bi-memory" style="font-size: 1.1rem; color: #00ac0d;"></i><span>@#getK2Gb(server.Host.MemTotal)#@</span></span>
                                                 <span class="refined-metric"><i class="bi bi-hdd" style="font-size: 1.1rem; color: #e41e10"></i><span>@#getK2Gb(server.Host.DiskTotal)#@</span></span>
                                             </div>
@@ -200,6 +174,9 @@
             this.group()
         },
         methods: {
+            openServerDetail(id) {
+                window.location.href = '/server/' + id;
+            },
             togglePopup(event, id) {
                 // 切换弹出层的激活状态
                 this.activePopup = this.activePopup === id ? null : id;
@@ -657,38 +634,6 @@
     }
   
     connect();
-
-    (function () {
-        const storageKey = 'refined-server-layout';
-        const root = document.documentElement;
-
-        function applyLayout(layout) {
-            const normalized = layout === 'list' ? 'list' : 'grid';
-            root.classList.toggle('refined-list-layout', normalized === 'list');
-            document.querySelectorAll('[data-refined-layout]').forEach((item) => {
-                const selected = item.dataset.refinedLayout === normalized;
-                item.classList.toggle('selected', selected);
-                item.querySelector('.check.icon').style.visibility = selected ? 'visible' : 'hidden';
-            });
-        }
-
-        try {
-            applyLayout(window.localStorage.getItem(storageKey));
-        } catch (_) {
-            applyLayout('grid');
-        }
-
-        document.addEventListener('click', function (event) {
-            const trigger = event.target.closest('[data-refined-layout]');
-            if (!trigger) return;
-            event.preventDefault();
-            const layout = trigger.dataset.refinedLayout;
-            try {
-                window.localStorage.setItem(storageKey, layout);
-            } catch (_) {}
-            applyLayout(layout);
-        });
-    })();
   
     $('.ui.accordion').accordion({ "exclusive": false });
 </script>

@@ -8,7 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta content="telephone=no" name="format-detection">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="light dark">
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#f6f6f5" />
@@ -17,8 +17,8 @@
     {{ else }}
         <link rel="manifest" href="/static/manifest-en-US.json?v20240905" />
     {{ end }}
-    <link rel="apple-touch-startup-image" href="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg{{end}}" />
-    <link rel="shortcut icon" type="image/png" href="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg{{end}}">
+    <link rel="apple-touch-startup-image" href="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/refined/sun-logo.svg?v20260802{{end}}" />
+    <link rel="shortcut icon" href="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/refined/sun-logo.svg?v20260802{{end}}">
     <link rel="stylesheet" href="/static/cdn/semantic-ui@2.4.2/dist/semantic.min.css">
     <link rel="stylesheet" href="/static/cdn/font-logos@0.17.0/assets/font-logos.css">
     <link rel="stylesheet" href="/static/cdn/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -53,7 +53,7 @@
             background: rgba(246, 246, 245, 0.74) !important;
         }
     </style>
-    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260802a">
+    <link rel="stylesheet" type="text/css" href="/static/refined/refined.css?v20260802ah">
     {{if eq .MatchedPath "/"}}
     <script>
         window.__refinedLoaderStartedAt = Date.now();
@@ -73,7 +73,49 @@
     {{end}}
     <script src="/static/theme-default/js/mixin.js?v20240911"></script>
     <script>
-        document.documentElement.setAttribute('nz-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        (function () {
+            var storageKey = 'nezha-refined-color-scheme';
+            var savedTheme = null;
+            try {
+                savedTheme = window.localStorage.getItem(storageKey);
+            } catch (_) {}
+            var theme = savedTheme === 'dark' || savedTheme === 'light'
+                ? savedTheme
+                : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('nz-theme', theme);
+            window.toggleRefinedColorScheme = function () {
+                var nextTheme = document.documentElement.getAttribute('nz-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('nz-theme', nextTheme);
+                try {
+                    window.localStorage.setItem(storageKey, nextTheme);
+                } catch (_) {}
+                window.dispatchEvent(new CustomEvent('refined-theme-change', { detail: { theme: nextTheme } }));
+            };
+            window.applyRefinedLayout = function () {
+                var savedLayout = null;
+                try {
+                    savedLayout = window.localStorage.getItem('nezha-refined-layout');
+                } catch (_) {}
+                var layout = savedLayout === 'list' ? 'list' : 'grid';
+                var app = document.getElementById('app');
+                if (app) app.setAttribute('data-refined-layout', layout);
+                var control = document.getElementById('refined-layout-' + layout);
+                if (control) control.checked = true;
+                return layout;
+            };
+            window.setRefinedLayout = function (layout, navigateHome) {
+                var nextLayout = layout === 'list' ? 'list' : 'grid';
+                try {
+                    window.localStorage.setItem('nezha-refined-layout', nextLayout);
+                } catch (_) {}
+                var app = document.getElementById('app');
+                if (app) app.setAttribute('data-refined-layout', nextLayout);
+                var control = document.getElementById('refined-layout-' + nextLayout);
+                if (control) control.checked = true;
+                if (navigateHome) window.location.href = '/';
+            };
+            document.addEventListener('DOMContentLoaded', window.applyRefinedLayout);
+        })();
     </script>
 </head>
 

@@ -1,0 +1,355 @@
+{{define "theme-default/server-detail"}}
+{{template "theme-default/header" .}}
+{{if ts .CustomCode}} {{.CustomCode|safe}} {{end}}
+{{template "theme-default/menu" .}}
+
+<main class="nb-container refined-detail-page">
+    <div class="ui container refined-detail-shell" v-if="server">
+        <section class="refined-detail-overview" aria-label="页面概览">
+            <strong>概览</strong>
+            <span>当前时间 @#currentTime#@</span>
+        </section>
+
+        <header class="refined-detail-heading">
+            <a class="refined-detail-back" href="/" aria-label="返回首页"><i class="arrow left icon"></i></a>
+            <div class="refined-detail-heading__copy">
+                <div class="refined-detail-title-row">
+                    <h1>@#server.Name#@</h1>
+                </div>
+            </div>
+        </header>
+
+        <template v-if="server.Host && server.State">
+            <section class="refined-detail-facts" aria-label="服务器概要">
+                <div class="refined-detail-fact-row">
+                    <div class="refined-detail-fact"><span>状态</span><strong><em class="refined-detail-status" :class="server.live ? 'is-online' : 'is-offline'">@#server.live ? '在线' : '离线'#@</em></strong></div>
+                    <div class="refined-detail-fact"><span>运行时间</span><strong>@#secondToDate(server.State.Uptime)#@</strong></div>
+                    <div class="refined-detail-fact"><span>版本</span><strong>@#server.Host.Version || '—'#@</strong></div>
+                    <div class="refined-detail-fact"><span>架构</span><strong>@#server.Host.Arch || '—'#@</strong></div>
+                    <div class="refined-detail-fact"><span>内存</span><strong>@#formatByteSize(server.Host.MemTotal)#@</strong></div>
+                    <div class="refined-detail-fact"><span>磁盘</span><strong>@#formatByteSize(server.Host.DiskTotal)#@</strong></div>
+                    <div v-if="server.Host.CountryCode" class="refined-detail-fact"><span>地区</span><strong class="refined-detail-region">@#countryName(server.Host.CountryCode)#@ <i :class="'fi fi-' + server.Host.CountryCode"></i></strong></div>
+                </div>
+                <div class="refined-detail-fact-row">
+                    <div class="refined-detail-fact refined-detail-fact--wide"><span>系统</span><strong>@#platformSummary(server.Host)#@</strong></div>
+                    <div class="refined-detail-fact refined-detail-fact--wide"><span>CPU</span><strong>@#cpuSummary(server.Host.CPU)#@</strong></div>
+                </div>
+                <div class="refined-detail-fact-row">
+                    <div class="refined-detail-fact"><span>负载</span><strong>@#fixed(server.State.Load1)#@ / @#fixed(server.State.Load5)#@ / @#fixed(server.State.Load15)#@</strong></div>
+                    <div class="refined-detail-fact"><span>上传</span><strong>@#formatByteSize(server.State.NetOutTransfer)#@</strong></div>
+                    <div class="refined-detail-fact"><span>下载</span><strong>@#formatByteSize(server.State.NetInTransfer)#@</strong></div>
+                </div>
+                <div class="refined-detail-fact-row">
+                    <div class="refined-detail-fact refined-detail-fact--wide"><span>启动时间</span><strong>@#formatTimestamp(server.Host.BootTime)#@</strong></div>
+                    <div class="refined-detail-fact refined-detail-fact--wide"><span>最后上报时间</span><strong>@#formatDateTime(server.LastActive)#@</strong></div>
+                </div>
+            </section>
+
+            <nav class="refined-detail-tabs" aria-label="详情页面切换">
+                <div class="refined-detail-tab-switch">
+                    <i class="refined-detail-tab-indicator" :class="{'is-network': activeTab === 'network'}"></i>
+                    <button type="button" :class="{active: activeTab === 'detail'}" @click="switchTab('detail')">详情</button>
+                    <button type="button" :class="{active: activeTab === 'network'}" @click="switchTab('network')">网络</button>
+                </div>
+            </nav>
+
+            <section v-show="activeTab === 'detail'" class="refined-detail-charts" aria-label="实时资源曲线">
+                <article class="refined-detail-chart"><header class="refined-detail-chart-head"><span class="refined-detail-chart-title">CPU</span><span class="refined-detail-chart-value"><b>@#percent(server.State.CPU)#@%</b><i class="refined-detail-meter refined-detail-meter--blue" :style="meterStyle(percent(server.State.CPU))"></i></span></header><div ref="cpuChart"></div></article>
+                <article class="refined-detail-chart"><header class="refined-detail-chart-head refined-detail-chart-head--memory"><span class="refined-detail-chart-pairs"><span><small>内存</small><b><i class="refined-detail-meter refined-detail-meter--purple" :style="meterStyle(percentOf(server.State.MemUsed, server.Host.MemTotal))"></i>@#percentOf(server.State.MemUsed, server.Host.MemTotal)#@%</b></span><span><small>虚拟内存</small><b><i class="refined-detail-meter refined-detail-meter--pink" :style="meterStyle(percentOf(server.State.SwapUsed, server.Host.SwapTotal))"></i>@#percentOf(server.State.SwapUsed, server.Host.SwapTotal)#@%</b></span></span><span class="refined-detail-chart-totals"><b>@#formatByteSize(server.State.MemUsed)#@ / @#formatByteSize(server.Host.MemTotal)#@</b><small>虚拟内存：@#formatByteSize(server.State.SwapUsed)#@</small></span></header><div ref="memoryChart"></div></article>
+                <article class="refined-detail-chart"><header class="refined-detail-chart-head"><span class="refined-detail-chart-title">磁盘</span><span class="refined-detail-chart-totals"><b>@#percentOf(server.State.DiskUsed, server.Host.DiskTotal)#@% <i class="refined-detail-meter refined-detail-meter--green" :style="meterStyle(percentOf(server.State.DiskUsed, server.Host.DiskTotal))"></i></b><small>@#formatByteSize(server.State.DiskUsed)#@ / @#formatByteSize(server.Host.DiskTotal)#@</small></span></header><div ref="diskChart"></div></article>
+                <article class="refined-detail-chart"><header class="refined-detail-chart-head refined-detail-chart-head--legend"><span><small>上传</small><b><i class="refined-detail-dot refined-detail-dot--blue"></i>@#formatByteSize(server.State.NetOutSpeed)#@/s</b></span><span><small>下载</small><b><i class="refined-detail-dot refined-detail-dot--purple"></i>@#formatByteSize(server.State.NetInSpeed)#@/s</b></span></header><div ref="networkChart"></div></article>
+                <article class="refined-detail-chart"><header class="refined-detail-chart-head refined-detail-chart-head--legend"><span><small>TCP</small><b><i class="refined-detail-dot refined-detail-dot--blue"></i>@#server.State.TcpConnCount || 0#@</b></span><span><small>UDP</small><b><i class="refined-detail-dot refined-detail-dot--pink"></i>@#server.State.UdpConnCount || 0#@</b></span></header><div ref="connectionChart"></div></article>
+                <article class="refined-detail-chart"><header class="refined-detail-chart-head"><span class="refined-detail-chart-title">进程</span><span class="refined-detail-chart-value"><b>@#server.State.ProcessCount || 0#@</b></span></header><div ref="processChart"></div></article>
+            </section>
+
+            <section v-show="activeTab === 'network'" class="refined-detail-network">
+                <article class="refined-detail-chart refined-detail-chart--wide">
+                    <header><span>网络延迟</span><strong>@#monitorSeries.length ? monitorSeries.length + ' 项监控' : '暂无监控'#@</strong></header>
+                    <div v-show="monitorSeries.length" ref="latencyChart" class="refined-detail-latency-chart"></div>
+                    <div v-if="!monitorLoading && !monitorSeries.length" class="refined-detail-empty">当前服务器没有可用的网络监控历史</div>
+                    <div v-if="monitorLoading" class="refined-detail-empty">正在读取网络监控数据…</div>
+                </article>
+            </section>
+        </template>
+
+        <section v-else class="refined-detail-offline">
+            <i class="power off icon"></i>
+            <h2>服务器暂时离线</h2>
+            <p>恢复连接后，此页面会自动显示实时资源数据。</p>
+        </section>
+    </div>
+</main>
+
+{{template "theme-default/footer" .}}
+<script>
+    var serverDetail = new Vue({
+        el: '#app',
+        delimiters: ['@#', '#@'],
+        mixins: [mixinsVue],
+        data: {
+            page: 'server-detail',
+            defaultTemplate: {{.Conf.Site.Theme}},
+            templates: {{.Themes}},
+            serverID: {{.ServerID}},
+            server: null,
+            history: [],
+            maxHistory: 90,
+            activeTab: 'detail',
+            monitorSeries: [],
+            monitorLoading: true,
+            charts: {},
+            reconnectTimer: null,
+            socket: null,
+            currentTime: '',
+            clockTimer: null
+        },
+        created() {
+            const payload = JSON.parse('{{.Servers}}');
+            const initial = payload.servers && payload.servers.length ? payload.servers[0] : null;
+            if (initial) {
+                this.server = this.normalizeServer(initial, payload.now || Date.now());
+                this.pushSnapshot(this.server);
+                if (this.history.length === 1) {
+                    this.history.unshift(Object.assign({}, this.history[0], { time: this.history[0].time - 15000 }));
+                }
+            }
+        },
+        mounted() {
+            this.updateClock();
+            this.clockTimer = window.setInterval(this.updateClock, 1000);
+            this.connectDetail();
+            this.loadMonitorHistory();
+            this.$nextTick(() => this.renderResourceCharts());
+            window.addEventListener('resize', this.resizeCharts);
+            window.addEventListener('refined-theme-change', this.refreshChartTheme);
+        },
+        beforeDestroy() {
+            window.removeEventListener('resize', this.resizeCharts);
+            window.removeEventListener('refined-theme-change', this.refreshChartTheme);
+            if (this.socket) this.socket.close();
+            if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+            if (this.clockTimer) clearInterval(this.clockTimer);
+            Object.keys(this.charts).forEach(key => this.charts[key] && this.charts[key].dispose());
+        },
+        methods: {
+            refreshChartTheme() {
+                Object.keys(this.charts).forEach(key => this.charts[key] && this.charts[key].dispose());
+                this.charts = {};
+                this.$nextTick(() => this.activeTab === 'network' ? this.renderLatencyChart() : this.renderResourceCharts());
+            },
+            updateClock() {
+                this.currentTime = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            },
+            meterStyle(value) {
+                return { '--value': this.percent(value) };
+            },
+            countryName(code) {
+                if (!code) return '';
+                try {
+                    return new Intl.DisplayNames(['zh-CN'], { type: 'region' }).of(String(code).toUpperCase()) || code;
+                } catch (_) {
+                    return code;
+                }
+            },
+            normalizeServer(server, now) {
+                if (!server.Host || !server.State) {
+                    server.live = false;
+                    return server;
+                }
+                const lastActive = new Date(server.LastActive).getTime();
+                server.live = now - lastActive <= 10000;
+                return server;
+            },
+            connectDetail() {
+                const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+                this.socket = new WebSocket(protocol + '://' + window.location.host + '/ws');
+                this.socket.onmessage = event => {
+                    const payload = JSON.parse(event.data);
+                    const next = (payload.servers || []).find(item => item.ID === this.serverID);
+                    if (!next) return;
+                    this.server = this.normalizeServer(next, payload.now || Date.now());
+                    this.pushSnapshot(this.server);
+                    this.$nextTick(() => this.renderResourceCharts());
+                };
+                this.socket.onclose = () => {
+                    this.reconnectTimer = window.setTimeout(() => this.connectDetail(), 3000);
+                };
+                this.socket.onerror = () => this.socket.close();
+            },
+            pushSnapshot(server) {
+                if (!server || !server.Host || !server.State) return;
+                const state = server.State;
+                const host = server.Host;
+                this.history.push({
+                    time: Date.now(),
+                    cpu: this.percent(state.CPU),
+                    memory: this.percentOf(state.MemUsed, host.MemTotal),
+                    swap: host.SwapTotal ? this.percentOf(state.SwapUsed, host.SwapTotal) : 0,
+                    disk: this.percentOf(state.DiskUsed, host.DiskTotal),
+                    netIn: Number(state.NetInSpeed || 0),
+                    netOut: Number(state.NetOutSpeed || 0),
+                    tcp: Number(state.TcpConnCount || 0),
+                    udp: Number(state.UdpConnCount || 0),
+                    process: Number(state.ProcessCount || 0)
+                });
+                if (this.history.length > this.maxHistory) this.history.splice(0, this.history.length - this.maxHistory);
+            },
+            switchTab(tab) {
+                this.activeTab = tab;
+                this.$nextTick(() => tab === 'network' ? this.renderLatencyChart() : this.renderResourceCharts());
+            },
+            chartTheme() {
+                const root = getComputedStyle(document.documentElement);
+                return {
+                    text: root.getPropertyValue('--nz-text-soft').trim() || '#777777',
+                    border: root.getPropertyValue('--nz-border').trim() || '#e4e4e1',
+                    primary: 'hsl(220, 70%, 50%)',
+                    secondary: 'hsl(280, 65%, 60%)',
+                    tertiary: 'hsl(160, 60%, 45%)'
+                };
+            },
+            baseChartOption(series, percentAxis) {
+                const theme = this.chartTheme();
+                return {
+                    animation: false,
+                    color: [theme.primary, theme.secondary, theme.tertiary],
+                    tooltip: { trigger: 'axis', borderWidth: 1, borderColor: theme.border, textStyle: { fontSize: 11 }, extraCssText: 'border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.1);' },
+                    grid: { top: 12, left: 12, right: 12, bottom: 22, containLabel: false },
+                    xAxis: {
+                        type: 'time',
+                        boundaryGap: false,
+                        splitNumber: 2,
+                        axisLine: { show: false },
+                        axisTick: { show: false },
+                        splitLine: { show: false },
+                        axisLabel: {
+                            color: theme.text,
+                            fontSize: 9,
+                            hideOverlap: true,
+                            formatter: value => {
+                                const seconds = Math.max(0, Math.round((Date.now() - Number(value)) / 1000));
+                                return seconds < 60 ? seconds + 's' : Math.round(seconds / 60) + 'm';
+                            }
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min: 0,
+                        max: percentAxis ? 100 : null,
+                        splitNumber: percentAxis ? 2 : 3,
+                        axisLine: { show: false },
+                        axisTick: { show: false },
+                        splitLine: { lineStyle: { color: theme.border, opacity: .7 } },
+                        axisLabel: { inside: true, margin: 0, color: theme.text, fontSize: 9, formatter: percentAxis ? '{value}%' : '{value}' }
+                    },
+                    series
+                };
+            },
+            renderChart(key, refName, definitions, percentAxis) {
+                const element = this.$refs[refName];
+                if (!element) return;
+                if (!this.charts[key]) this.charts[key] = echarts.init(element);
+                const palettes = {
+                    cpu: ['hsl(220, 70%, 50%)'],
+                    memory: ['hsl(252, 50%, 50%)', 'hsl(324, 50%, 50%)'],
+                    disk: ['hsl(160, 60%, 45%)'],
+                    network: ['hsl(280, 65%, 60%)', 'hsl(220, 70%, 50%)'],
+                    connection: ['hsl(220, 70%, 50%)', 'hsl(324, 50%, 50%)'],
+                    process: ['hsl(340, 75%, 55%)']
+                };
+                const series = definitions.map((definition, index) => ({
+                    name: definition.name,
+                    type: 'line',
+                    showSymbol: false,
+                    smooth: false,
+                    step: definition.area ? 'end' : false,
+                    lineStyle: { width: 1, color: palettes[key][index] },
+                    itemStyle: { color: palettes[key][index] },
+                    areaStyle: definition.area ? { opacity: .3, color: palettes[key][index] } : undefined,
+                    data: this.history.map(point => [point.time, point[definition.key]])
+                }));
+                this.charts[key].setOption(this.baseChartOption(series, percentAxis), true);
+            },
+            renderResourceCharts() {
+                if (!this.server || !this.server.Host || this.activeTab !== 'detail') return;
+                this.renderChart('cpu', 'cpuChart', [{ name: 'CPU', key: 'cpu', area: true }], true);
+                this.renderChart('memory', 'memoryChart', [{ name: '内存', key: 'memory', area: true }, { name: '虚拟内存', key: 'swap', area: true }], true);
+                this.renderChart('disk', 'diskChart', [{ name: '磁盘', key: 'disk', area: true }], true);
+                this.renderChart('network', 'networkChart', [{ name: '下载', key: 'netIn' }, { name: '上传', key: 'netOut' }], false);
+                this.renderChart('connection', 'connectionChart', [{ name: 'TCP', key: 'tcp' }, { name: 'UDP', key: 'udp' }], false);
+                this.renderChart('process', 'processChart', [{ name: '进程', key: 'process', area: true }], false);
+            },
+            loadMonitorHistory() {
+                fetch('/api/v1/monitor/' + this.serverID)
+                    .then(response => response.ok ? response.json() : Promise.reject(new Error('monitor request failed')))
+                    .then(payload => {
+                        this.monitorSeries = payload.result || [];
+                        this.monitorLoading = false;
+                        this.$nextTick(() => this.renderLatencyChart());
+                    })
+                    .catch(() => {
+                        this.monitorSeries = [];
+                        this.monitorLoading = false;
+                    });
+            },
+            renderLatencyChart() {
+                if (this.activeTab !== 'network' || !this.monitorSeries.length || !this.$refs.latencyChart) return;
+                if (!this.charts.latency) this.charts.latency = echarts.init(this.$refs.latencyChart);
+                const definitions = this.monitorSeries.map(item => ({
+                    name: item.monitor_name,
+                    type: 'line',
+                    smooth: .28,
+                    showSymbol: false,
+                    lineStyle: { width: 1.5 },
+                    data: (item.created_at || []).map((time, index) => [new Date(time).getTime(), (item.avg_delay || [])[index] || null])
+                }));
+                this.charts.latency.setOption(this.baseChartOption(definitions, false), true);
+            },
+            resizeCharts() {
+                Object.keys(this.charts).forEach(key => this.charts[key] && this.charts[key].resize());
+            },
+            percent(value) {
+                return Math.max(0, Math.min(100, Math.round(Number(value || 0))));
+            },
+            percentOf(used, total) {
+                return total ? this.percent(Number(used || 0) / Number(total) * 100) : 0;
+            },
+            fixed(value) {
+                return Number(value || 0).toFixed(2);
+            },
+            readableBytes(bytes) {
+                const value = Number(bytes || 0);
+                if (!value) return '0B';
+                const units = ['B', 'K', 'M', 'G', 'T', 'P'];
+                const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
+                return parseFloat((value / Math.pow(1024, index)).toFixed(2)) + units[index];
+            },
+            formatByteSize(bytes) {
+                return this.readableBytes(bytes);
+            },
+            secondToDate(seconds) {
+                const value = Number(seconds || 0);
+                const days = Math.floor(value / 86400);
+                const hours = Math.floor(value % 86400 / 3600);
+                if (days) return days + ' 天 ' + hours + ' 小时';
+                return hours + ' 小时';
+            },
+            formatTimestamp(timestamp) {
+                return timestamp ? new Date(timestamp * 1000).toLocaleString('zh-CN', { hour12: false }) : '—';
+            },
+            formatDateTime(value) {
+                if (!value) return '—';
+                const date = new Date(value);
+                return date.getFullYear() >= 2000 ? date.toLocaleString('zh-CN', { hour12: false }) : '—';
+            },
+            cpuSummary(cpu) {
+                return Array.isArray(cpu) && cpu.length ? cpu.join(', ') : '—';
+            },
+            platformSummary(host) {
+                const parts = [host.Platform, host.PlatformVersion, host.Virtualization].filter(Boolean);
+                return parts.length ? parts.join(' · ') : '—';
+            }
+        }
+    });
+</script>
+{{end}}

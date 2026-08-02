@@ -1,9 +1,14 @@
 {{define "theme-default/menu"}}
-<div id="app">
-<div class="ui large top fixed menu nb-menu" style="z-index:9999999;">
+<div id="app" data-refined-layout="grid">
+{{if eq .MatchedPath "/"}}
+<input class="refined-layout-control" type="radio" name="refined-layout" id="refined-layout-grid" checked>
+<input class="refined-layout-control" type="radio" name="refined-layout" id="refined-layout-list">
+{{end}}
+<div class="ui large top fixed menu nb-menu{{if or (eq .MatchedPath "/") (eq .MatchedPath "/server/:id")}} refined-home-nav{{end}}" style="z-index:9999999;">
     <div class="ui container">
         <a class="item{{if .Conf.Site.LogoURL}} has-custom-logo{{end}}" href="/" aria-label="{{tr "Home"}}">
-            <img src="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/logo.svg?v20210804{{end}}" alt="" aria-hidden="true">
+            <img src="{{if .Conf.Site.LogoURL}}{{.Conf.Site.LogoURL}}{{else}}/static/refined/sun-logo.svg?v20260802{{end}}" alt="" aria-hidden="true">
+            {{if or (eq .MatchedPath "/") (eq .MatchedPath "/server/:id")}}<span class="refined-home-brand-text">{{.Conf.Site.Brand}}</span>{{end}}
         </a>
         <a class='item' href="/"><i class="home icon"></i>{{tr "Home"}}</a>
         <template v-if="isMobile"> 
@@ -19,42 +24,49 @@
             <a href="/service" class='item'><i class="rss icon"></i>{{tr "Services" }}</a>
             <a href="/network" class="item"><i class="bi bi-hdd-network icon"></i>{{tr "NetworkSpiter"}}</a>
         </template>
-        {{if eq .MatchedPath "/"}}
-            <div class="item ui dropdown refined-layout-switch" :class="{ simple: !isMobile }">
-                <div class="text"><i class="th large icon" style="margin-right:3px;"></i>布局<i class="dropdown icon" style="margin-right:0px;"></i></div>
+        {{if or (eq .MatchedPath "/") (eq .MatchedPath "/server/:id")}}
+            <span class="refined-nav-spacer" aria-hidden="true"></span>
+            <div class="right item ui dropdown refined-layout-switch refined-layout-switch--right" :class="{ simple: !isMobile }">
+                <div class="text" tabindex="0" role="button" aria-haspopup="menu"><i class="grid layout icon" style="margin-right:3px;"></i>布局<i class="dropdown icon" style="margin-right:0px;"></i></div>
                 <div class="menu">
-                    <a href="#" class="item" data-refined-layout="grid"><i class="grid layout icon"></i>卡片<i class="check icon"></i></a>
-                    <a href="#" class="item" data-refined-layout="list"><i class="list icon"></i>列表<i class="check icon"></i></a>
+                    <label for="refined-layout-grid" class="item refined-menu-item" data-refined-layout="grid" onclick="window.setRefinedLayout && window.setRefinedLayout('grid', {{if ne .MatchedPath "/"}}true{{else}}false{{end}})"><i class="grid layout icon"></i><span class="refined-menu-label">卡片</span><i class="check icon"></i></label>
+                    <label for="refined-layout-list" class="item refined-menu-item" data-refined-layout="list" onclick="window.setRefinedLayout && window.setRefinedLayout('list', {{if ne .MatchedPath "/"}}true{{else}}false{{end}})"><i class="list icon"></i><span class="refined-menu-label">列表</span><i class="check icon"></i></label>
                 </div>
             </div>
         {{end}}
         {{ if not .Conf.DisableSwitchTemplateInFrontend }}        
-            <div class="item ui dropdown" :class="{ simple: !isMobile }">
-                <div class="text"><i class="bi bi-incognito icon" style="margin-right:3px;"></i>{{tr "Template" }}<i class="dropdown icon" style="margin-right:0px;"></i></div>
+            <div class="{{if and (ne .MatchedPath "/") (ne .MatchedPath "/server/:id")}}right {{end}}item ui dropdown refined-theme-switch" :class="{ simple: !isMobile }">
+                <div class="text" tabindex="0" role="button" aria-haspopup="menu"><i class="bi bi-incognito icon" style="margin-right:3px;"></i>{{tr "Template" }}<i class="dropdown icon" style="margin-right:0px;"></i></div>
                 <div class="menu"> 
-                    <a v-for="(item, index) in adaptedTemplates" :key="index" @click="toggleTemplate(item.key)" class="item">
-                        <i :class="item.icon + ' icon'"></i>@#item.name#@
+                    <a v-for="(item, index) in adaptedTemplates" :key="index" @click="toggleTemplate(item.key)" class="item refined-menu-item">
+                        <i :class="item.icon + ' icon'"></i><span class="refined-menu-label">@#item.name#@</span>
                         <i class="check icon" v-if="preferredTemplate === item.key"></i>
                     </a>
-                    <a v-if="defaultTemplate === 'custom'" @click="toggleTemplate('custom')" class="item">
-                        <i class="expand icon"></i>Custom
+                    <a v-if="defaultTemplate === 'custom'" @click="toggleTemplate('custom')" class="item refined-menu-item">
+                        <i class="expand icon"></i><span class="refined-menu-label">Custom</span>
                     </a>
                 </div>
             </div>
         {{ end }}
+        <button type="button" class="item refined-color-toggle" onclick="window.toggleRefinedColorScheme && window.toggleRefinedColorScheme()" aria-label="切换日间或夜间模式" title="切换日间或夜间模式">
+            <i class="bi bi-sun refined-color-toggle__sun" aria-hidden="true"></i>
+            <i class="bi bi-moon-stars refined-color-toggle__moon" aria-hidden="true"></i>
+        </button>
         {{if .Admin}}
-        <div class="item right item-right ui simple dropdown">
-            <div class="text">
-                <i class="user icon" style="margin-right:3px"></i>{{.Admin.Name}}
-                <i class="dropdown icon"></i>
-            </div>
-            <div class="menu">
-                <a class="item" href="/server"><i class="terminal icon"></i>{{tr "AdminPanel"}}</a>
-                <a class="item" @click="logOut({{.Admin.ID}})"><i class="logout icon"></i>{{tr "Logout"}}</a>
+        <div class="item {{if and (ne .MatchedPath "/") (ne .MatchedPath "/server/:id") .Conf.DisableSwitchTemplateInFrontend}}right{{end}} item-right ui simple dropdown">
+            <span class="refined-admin-trigger">
+                <a class="text refined-admin-link" href="/server">
+                    <i class="user icon" style="margin-right:3px"></i>{{.Admin.Name}}
+                </a>
+                <i class="dropdown icon refined-admin-dropdown-icon" aria-hidden="true"></i>
+            </span>
+            <div class="menu refined-admin-menu">
+                <a class="item" href="/server">{{tr "AdminPanel"}}</a>
+                <a class="item" @click="logOut({{.Admin.ID}})">{{tr "Logout"}}</a>
             </div>
         </div>
         {{else}}
-        <a href="/login" class="item right item-right" style="padding-right:1.2rem"><i class="sign-in icon"></i>{{tr "Login"}}</a>
+        <a href="/login" class="item {{if and (ne .MatchedPath "/") (ne .MatchedPath "/server/:id") .Conf.DisableSwitchTemplateInFrontend}}right{{end}} item-right" style="padding-right:1.2rem"><i class="sign-in icon"></i>{{tr "Login"}}</a>
         {{end}}
     </div>
 </div>

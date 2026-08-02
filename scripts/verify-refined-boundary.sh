@@ -44,7 +44,7 @@ grep -Fq -- "--nz-accent:" "$CSS_PATH" || fail "design tokens are missing"
 grep -Fq ".refined-page-loader" "$CSS_PATH" || fail "homepage loader styles are missing"
 grep -Fq ".status.cards .ui.progress.fine .bar" "$CSS_PATH" || fail "status compatibility rule is missing"
 grep -Fq "@media (prefers-reduced-motion: reduce)" "$CSS_PATH" || fail "reduced-motion support is missing"
-grep -Fq "refined-list-layout" "$CSS_PATH" || fail "server list layout styles are missing"
+grep -Fq "data-refined-layout='list'" "$CSS_PATH" || fail "server list layout styles are missing"
 grep -Fq "data-refined-layout" "resource/template/theme-default/menu.html" || fail "server layout switch is missing"
 grep -Fq 'NZ_GRPCPORT: "80"' "$REFINED_COMPOSE" || fail "single-port gRPC is not configured"
 grep -Fq '"${NZ_HTTP_PORT:-10086}:80"' "$REFINED_COMPOSE" || fail "default host port 10086 is missing"
@@ -59,7 +59,7 @@ if [ "${1:-}" != "" ]; then
 
     unexpected=$(
         git diff --name-only "$base_ref"...HEAD |
-            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|install\.sh|refined-install\.sh|refined-update\.sh|cmd/dashboard/controller/member_api\.go|model/config\.go|resource/static/refined/.*|resource/static/public-note-editor\.css|resource/template/common/(header|menu)\.html|resource/template/dashboard-default/(file|login|redirect|server|setting|terminal)\.html|resource/template/theme-default/(header|home|menu|network|service)\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
+            grep -Ev '^(\.env\.example|\.github/.*|\.gitignore|README\.md|compose\.refined\.yaml|docs/.*|install\.sh|refined-install\.sh|refined-update\.sh|cmd/dashboard/controller/(common_page|member_api)\.go|model/config\.go|resource/static/refined/.*|resource/static/public-note-editor\.css|resource/template/common/(header|menu)\.html|resource/template/dashboard-default/(file|login|redirect|server|setting|terminal)\.html|resource/template/theme-default/(header|home|menu|network|server-detail|service)\.html|scripts/smoke-refined-image\.sh|scripts/verify-refined-boundary\.sh)$' ||
             true
     )
 
