@@ -54,8 +54,8 @@ if [ ! -f "$ENV_FILE" ]; then
         echo "NZ_ADMIN=admin"
         echo "NZ_ADMIN_PASSWORD=${admin_password}"
         echo "NZ_SITE_NAME=Nezha Monitoring"
-        echo "NZ_HTTP_PORT=8008"
-        echo "NZ_GRPC_PORT=5555"
+        echo "NZ_HTTP_PORT=10086"
+        echo "NZ_GRPC_PORT=10086"
         echo "NZ_GRPC_HOST="
         echo "NZ_GRPC_SECRET=${grpc_secret}"
         echo "TZ=Asia/Shanghai"
@@ -68,11 +68,19 @@ chmod 600 "$ENV_FILE"
 image_ref=$(env_value REFINED_IMAGE)
 admin_password_value=$(env_value NZ_ADMIN_PASSWORD)
 grpc_secret_value=$(env_value NZ_GRPC_SECRET)
+http_port_value=$(env_value NZ_HTTP_PORT)
+grpc_port_value=$(env_value NZ_GRPC_PORT)
 
 [ -n "$image_ref" ] || fail "REFINED_IMAGE is missing in .env"
 [ -n "$(env_value NZ_ADMIN)" ] || fail "NZ_ADMIN is missing in .env"
 [ -n "$admin_password_value" ] || fail "NZ_ADMIN_PASSWORD is missing in .env"
 [ -n "$grpc_secret_value" ] || fail "NZ_GRPC_SECRET is missing in .env"
+[ -n "$http_port_value" ] || fail "NZ_HTTP_PORT is missing in .env"
+[ -n "$grpc_port_value" ] || fail "NZ_GRPC_PORT is missing in .env"
+
+if [ "$http_port_value" != "$grpc_port_value" ]; then
+    fail "NZ_HTTP_PORT and NZ_GRPC_PORT must both use the same port (default: 10086)"
+fi
 
 case "$admin_password_value" in
     Change-*|replace-with-*) fail "replace the NZ_ADMIN_PASSWORD placeholder in .env" ;;
@@ -96,7 +104,7 @@ grpc_host=$(env_value NZ_GRPC_HOST)
 
 echo
 echo "Nezha Zero Refined is healthy."
-echo "Dashboard: http://127.0.0.1:${http_port:-8008}"
+echo "Dashboard: http://127.0.0.1:${http_port:-10086}"
 
 if [ "$created_env" -eq 1 ] && [ "$existing_config" -eq 0 ]; then
     echo "Admin user: ${admin_user:-admin}"

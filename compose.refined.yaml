@@ -9,7 +9,9 @@ services:
       NZ_LANGUAGE: zh-CN
       NZ_LOCATION: ${TZ:-Asia/Shanghai}
       NZ_HTTPPORT: "80"
-      NZ_GRPCPORT: "5555"
+      # 与上游的“单端口 gRPC”部署一致：HTTP 与 gRPC 在容器内共用 80，
+      # 宿主机只需要开放一次 NZ_HTTP_PORT（默认 10086）。
+      NZ_GRPCPORT: "80"
       NZ_GRPCHOST: ${NZ_GRPC_HOST:-}
       NZ_GRPCDISCOVERKEY: ${NZ_GRPC_SECRET:?Run ./refined-install.sh first}
       NZ_OAUTH2_ADMIN: ${NZ_ADMIN:-admin}
@@ -21,8 +23,7 @@ services:
     volumes:
       - ./data:/dashboard/data
     ports:
-      - "${NZ_HTTP_PORT:-8008}:80"
-      - "${NZ_GRPC_PORT:-5555}:5555"
+      - "${NZ_HTTP_PORT:-10086}:80"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
       interval: 30s

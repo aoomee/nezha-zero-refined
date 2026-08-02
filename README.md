@@ -16,11 +16,11 @@
 
 ## 这是什么
 
-Nezha Zero Refined 是 [railzen/nezha-zero](https://github.com/railzen/nezha-zero) 的非官方美化发行版。它保留上游 Dashboard、Agent、数据库、API、WebSocket、gRPC、登录、告警、任务、终端等功能，只在最后加载一层独立 CSS，重新设计默认前台、登录页和管理后台的视觉表现。
+Nezha Zero Refined 是 [railzen/nezha-zero](https://github.com/railzen/nezha-zero) 的非官方美化发行版。它保留上游 Dashboard、Agent、数据库、API、WebSocket、gRPC、登录、告警、任务、终端等核心功能，主要通过最后加载的独立视觉层重新设计默认前台、登录页和管理后台；仅额外增加 Logo 配置绑定，方便在后台替换站点图标。
 
 本项目追求三件事：
 
-- **功能不变**：不改 Go、JavaScript、API、数据库结构或 Agent 协议。
+- **功能不变**：不改变监控逻辑、Agent 协议、API 行为、数据库兼容性或 WebSocket/gRPC 通道。
 - **开箱即用**：提供多架构容器镜像、自动生成安全凭据和 Docker Compose 部署。
 - **持续跟随上游**：每天合并上游 `main`；只有边界检查、Dashboard 测试、Agent 测试和构建全部通过才会发布。
 
@@ -36,13 +36,13 @@ Nezha Zero Refined 是 [railzen/nezha-zero](https://github.com/railzen/nezha-zer
 
 ## 30 秒部署
 
-需要已安装 Docker Engine 与支持 `up --wait` 的较新 Docker Compose v2。
+需要已安装 Docker Engine 与支持 `up --wait` 的较新 Docker Compose v2。Debian / Ubuntu 可以直接执行：
 
 ```bash
-git clone https://github.com/aoomee/nezha-zero-refined.git
-cd nezha-zero-refined
-./refined-install.sh
+curl -fsSL https://raw.githubusercontent.com/aoomee/nezha-zero-refined/main/install.sh | sudo sh
 ```
+
+它会安装 Git（如缺失）、把项目放在 `/opt/nezha-zero-refined`，并启动安装流程。已经克隆项目的用户仍可在项目目录执行 `./refined-install.sh`。
 
 脚本会：
 
@@ -51,14 +51,14 @@ cd nezha-zero-refined
 3. 拉取 `amd64`、`arm64` 或 `s390x` 对应镜像；
 4. 启动 Dashboard，并在终端中显示首次登录信息。
 
-默认访问地址为 `http://服务器IP:8008`，默认管理员为 `admin`。首次输出的密码也会保存在 `.env`，请妥善保管。
+默认访问地址为 `http://服务器IP:10086`，默认管理员为 `admin`。首次输出的密码也会保存在 `.env`，请妥善保管。
 
-> 公网部署前，请配置反向代理与 HTTPS，并只开放实际需要的端口。Dashboard HTTP 默认映射为 `8008`，Agent gRPC 默认映射为 `5555`。
+> 公网部署前，请配置反向代理与 HTTPS。Dashboard HTTP 与 Agent gRPC 默认共用 `10086`，与上游单端口教程兼容。
 
 ## 更新
 
 ```bash
-cd nezha-zero-refined
+cd /opt/nezha-zero-refined
 ./refined-update.sh
 ```
 
@@ -74,8 +74,8 @@ cd nezha-zero-refined
 | `NZ_ADMIN` | `admin` | 密码登录管理员用户名 |
 | `NZ_ADMIN_PASSWORD` | 自动生成 | 管理员密码 |
 | `NZ_SITE_NAME` | `Nezha Monitoring` | 站点名称 |
-| `NZ_HTTP_PORT` | `8008` | 主机 HTTP 端口 |
-| `NZ_GRPC_PORT` | `5555` | 主机 Agent gRPC 端口 |
+| `NZ_HTTP_PORT` | `10086` | 主机 HTTP 端口 |
+| `NZ_GRPC_PORT` | `10086` | 主机 Agent gRPC 端口；必须与 HTTP 端口相同 |
 | `NZ_GRPC_HOST` | 空 | Agent 连接的公网域名或 IP |
 | `NZ_GRPC_SECRET` | 自动生成 | Agent 自动发现密钥 |
 | `TZ` | `Asia/Shanghai` | 时区 |
@@ -106,19 +106,20 @@ cp -a /path/to/old-nezha/data ./data
 
 ## 如何保证功能性不变
 
-Refined 的运行时代码与上游相同。视觉改动被限制在三个位置：
+Refined 的核心运行逻辑与上游保持一致。改动范围被限制在视觉入口、样式文件、开箱即用部署文件，以及用于替换 Logo 的轻量配置绑定：
 
 | 层 | 文件 | 作用 |
 | --- | --- | --- |
 | 前台入口 | `resource/template/theme-default/header.html` | 在上游样式之后加载 Refined CSS |
 | 公共入口 | `resource/template/common/header.html` | 让登录页与管理后台加载同一视觉层 |
-| 视觉层 | `resource/static/refined/refined.css` | 颜色、间距、圆角、排版和响应式布局 |
+| 视觉层 | `resource/static/refined/`、`resource/static/public-note-editor.css` | 颜色、间距、圆角、排版、加载动画和响应式布局 |
+| 管理入口 | `resource/template/dashboard-default/setting.html`、`cmd/dashboard/controller/member_api.go`、`model/config.go` | 保存站点 Logo 与连接页 Logo 配置 |
 
 没有修改：
 
-- Dashboard 或 Agent 的 Go 代码；
-- Vue、jQuery、WebSocket 与监控图表逻辑；
-- API、gRPC、Proto、数据库模型和迁移；
+- Dashboard 或 Agent 的监控采集、告警、任务和终端逻辑；
+- Vue、jQuery、WebSocket 与监控图表数据逻辑；
+- API 行为、gRPC、Proto、数据库迁移和 Agent 协议；
 - 登录加密、CSRF、表单字段、通知、任务与终端逻辑。
 
 CI 会分别执行：
