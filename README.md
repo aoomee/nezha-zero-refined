@@ -1,20 +1,22 @@
 <div align="center">
   <br>
-  <img width="360" style="max-width:80%" src="resource/static/brand.svg" title="哪吒监控 Nezha Monitoring">
-  <br><br>
-  <a href="https://railzen.github.io/nezha-zero" target="_blank"><img src="https://img.shields.io/badge/Docs-Available-orange?style=for-the-badge&logo=gitbook&logoColor=white" alt="查看上游文档"></a>
-  <a href="https://github.com/railzen/nezha-zero" target="_blank"><img alt="GitHub release" src="https://img.shields.io/github/v/release/railzen/nezha-zero?color=brightgreen&style=for-the-badge&logo=github&label=Dashboard"></a>
-  <a href="https://github.com/nezhahq/nezha" target="_blank"><img src="https://img.shields.io/badge/NEZHA-NAIBA-blue?logo=github&style=for-the-badge" alt="访问哪吒仓库"></a>
-  <br><br>
-  <p><b>Nezha Monitoring: Self-hostable, lightweight, servers and websites monitoring tool.</b></p>
-  <p>Supports <b>monitoring</b> system status, HTTP, TCP, Ping, <b>push alerts</b> and <b>web terminal</b>.</p>
+  <img width="88" src="resource/static/brand.svg" title="哪吒监控 Nezha Monitoring">
+  <h1>Nezha Zero Refined</h1>
+  <p>轻量、自托管的服务器与网站监控 · 简约界面发行版</p>
+  <p>
+    <a href="#一键安装--install">安装</a> ·
+    <a href="#界面预览--screenshots">预览</a> ·
+    <a href="docs/debian-nginx-cloudflare.md">部署教程</a> ·
+    <a href="https://github.com/railzen/nezha-zero">上游项目</a>
+  </p>
+  <p>
+    <a href="https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/aoomee/nezha-zero-refined/refined-ci.yml?label=checks&style=flat-square" alt="检查状态"></a>
+    <a href="https://github.com/aoomee/nezha-zero-refined/pkgs/container/nezha-zero-refined"><img src="https://img.shields.io/badge/image-GHCR-24292f?style=flat-square&logo=docker" alt="容器镜像"></a>
+    <a href="https://github.com/aoomee/nezha-zero-refined/blob/main/LICENSE"><img src="https://img.shields.io/github/license/aoomee/nezha-zero-refined?style=flat-square" alt="许可证"></a>
+  </p>
 </div>
 
-> Nezha Zero Refined 是基于 [railzen/nezha-zero](https://github.com/railzen/nezha-zero) 的美化发行版：保留上游功能与数据兼容性，仅为前台、登录与管理后台增加一层独立的简约视觉设计。
-
-[![Refined CI](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-ci.yml/badge.svg)](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-ci.yml)
-[![Publish image](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-image.yml/badge.svg)](https://github.com/aoomee/nezha-zero-refined/actions/workflows/refined-image.yml)
-[![Sync upstream](https://github.com/aoomee/nezha-zero-refined/actions/workflows/sync-upstream.yml/badge.svg)](https://github.com/aoomee/nezha-zero-refined/actions/workflows/sync-upstream.yml)
+> 基于 [railzen/nezha-zero](https://github.com/railzen/nezha-zero)。保留上游功能与数据兼容性，仅为前台、登录与管理后台增加独立的简约视觉设计。
 
 ## 概要 / Abstract
 
@@ -99,7 +101,10 @@ cp -a /path/to/old-nezha/data ./data
 
 前台、登录页、设置、日志、终端与文件管理入口均使用同一套圆角、间距、颜色与按钮规则。站点和连接页 Logo 可在设置页直接替换。
 
-#### Dashboard
+<details>
+<summary>查看上游 Dashboard 与主题预览</summary>
+
+<br>
 
 | Dashboard | Login Panel |
 | --- | --- |
@@ -114,6 +119,8 @@ cp -a /path/to/old-nezha/data ./data
 | ![Neko Mdui](resource/template/theme-mdui/screenshot.png) | ![AngelKanade](resource/template/theme-angel-kanade/screenshot.png) | ![Default Theme](resource/template/theme-default/screenshot.png) |
 
 面板安装后可在设置页（`/setting`）切换语言与主题。
+
+</details>
 
 ## 备注和公开备注 / Public Note
 
