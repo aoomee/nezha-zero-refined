@@ -44,16 +44,41 @@ var (
 	RSAPublicKeyE    int
 )
 
-var loginChallengeConsumeMu sync.Mutex
+var (
+	loginChallengeConsumeMu sync.Mutex
+	twoFactorMu             sync.Mutex
+)
 
 const (
 	loginChallengeCachePrefix = "login_challenge_"
 	loginChallengeTTL         = 5 * time.Minute
 	authRateLimit1sKey        = "authrate_r1s"
-	authRateLimit1mKey        = "authrate_r1m"
+	authRateLimit30sKey       = "authrate_r30s"
 	authRateLimit1sMax        = 9
-	authRateLimit1mMax        = 120
+	authRateLimit30sMax       = 75
+	// twoFactorCachePrefix 二次验证一次性 ticket 的缓存键前缀。
+	// ticket 只存于服务端缓存，对应已通过密码或 OAuth 身份核验但尚未通过 2FA 的用户，
+	// 通过 2FA 后立即删除（一次性消费），避免被重放。
+	twoFactorCachePrefix = "login_2fa_"
+	twoFactorTTL         = 5 * time.Minute
+	// twoFactorMaxAttempts 同一 ticket 允许的 TOTP 试错次数，防 6 位码枚举。
+	twoFactorMaxAttempts = 5
 )
+
+type twoFactorLoginMethod uint8
+
+const (
+	twoFactorLoginMethodPassword twoFactorLoginMethod = iota
+	twoFactorLoginMethodOAuth
+)
+
+// twoFactorTicket 二次验证中间态：已通过第一阶段身份核验、等待 TOTP 校验。
+// 仅存于服务端缓存，不下发客户端。
+type twoFactorTicket struct {
+	User     model.User
+	Method   twoFactorLoginMethod
+	Attempts int
+}
 
 func init() {
 	// 每次启动随机生成 RSA-2048 密钥对，私钥仅驻留内存
@@ -74,6 +99,7 @@ type oauth2controller struct {
 func (oa *oauth2controller) serve() {
 	oa.r.GET("/oauth2/login", oa.login)
 	oa.r.GET("/oauth2/callback", oa.callback)
+	oa.r.POST("/auth/2fa", oa.twoFactorVerify)
 	oa.r.POST("/auth", oa.passwordLogin)
 	oa.r.GET("/authinfo", oa.newChallenge)
 }
@@ -107,7 +133,7 @@ func (oa *oauth2controller) newChallenge(c *gin.Context) {
 
 func (oa *oauth2controller) passwordLogin(c *gin.Context) {
 	if !allowAuthRateLimitedCheck() {
-		audit.Record(c, audit.TypeAuth, "Password login failed", "login blocked by rate limit")
+		// 被全局限速器拒绝的请求不写审计，避免未认证写放大打满 SQLite 单写者。
 		showLoginRuleFailed(c)
 		return
 	}
@@ -115,7 +141,6 @@ func (oa *oauth2controller) passwordLogin(c *gin.Context) {
 	type LoginForm struct {
 		Username string `form:"username" binding:"required,max=64"`
 		Password string `form:"password" binding:"required,min=6"`
-		OTP      string `form:"otp"`
 	}
 
 	var req LoginForm
@@ -126,7 +151,6 @@ func (oa *oauth2controller) passwordLogin(c *gin.Context) {
 	}
 	req.Username = strings.TrimSpace(req.Username)
 	req.Password = strings.TrimSpace(req.Password)
-	req.OTP = strings.TrimSpace(req.OTP)
 
 	ruleAllowed := true
 	if !singleton.Conf.PasswordLoginActive() {
@@ -229,24 +253,7 @@ func (oa *oauth2controller) passwordLogin(c *gin.Context) {
 		return
 	}
 
-	if singleton.Conf.TwoFactorActive() {
-		if req.OTP == "" {
-			incrementFailCount(failKey)
-			incrementFailCount(ipFailKey)
-			audit.Record(c, audit.TypeAuth, "Password login failed", "empty two-factor code")
-			showLoginFailed(c)
-			return
-		}
-		if !totp.Validate(singleton.Conf.Site.TwoFactorSecret, req.OTP, 1) {
-			incrementFailCount(failKey)
-			incrementFailCount(ipFailKey)
-			audit.Record(c, audit.TypeAuth, "Password login failed", "invalid two-factor code")
-			showLoginFailed(c)
-			return
-		}
-	}
-
-	// 登录成功，清除失败计数
+	// 第一阶段身份核验成功，清除密码失败计数。TOTP 使用独立 ticket 次数限制。
 	singleton.Cache.Delete(failKey)
 	singleton.Cache.Delete(ipFailKey)
 
@@ -257,7 +264,16 @@ func (oa *oauth2controller) passwordLogin(c *gin.Context) {
 		SuperAdmin: true,
 	}
 
-	// 生成 token 并设置过期时间
+	if singleton.Conf.TwoFactorActive() {
+		oa.beginTwoFactor(c, user, twoFactorLoginMethodPassword)
+		return
+	}
+
+	oa.issuePasswordSession(c, &user)
+}
+
+// issuePasswordSession 为已通过全部校验的密码用户发放独立密码会话。
+func (oa *oauth2controller) issuePasswordSession(c *gin.Context, user *model.User) {
 	sessionToken, err := utils.NewSessionToken()
 	if err != nil {
 		mygin.ShowErrorPage(c, mygin.ErrInfo{
@@ -283,7 +299,7 @@ func (oa *oauth2controller) passwordLogin(c *gin.Context) {
 	c.HTML(200, "dashboard-"+singleton.Conf.Site.DashboardTheme+"/redirect", mygin.CommonEnvironment(c, gin.H{
 		"URL": "/",
 	}))
-	audit.Record(c, audit.TypeAuth, "Password login succeeded", "user: "+req.Username)
+	audit.Record(c, audit.TypeAuth, "Password login succeeded", "user: "+user.Login)
 }
 
 // 显示统一登录失败页面
@@ -323,31 +339,34 @@ func consumeLoginChallenge(challengeID, challenge string) bool {
 	return true
 }
 
-// allowAuthRateLimitedCheck 全站限制认证相关公开接口共用计数：1 秒 9 次、1 分钟 120 次。
+// allowAuthRateLimitedCheck 全站限制认证相关公开接口共用计数。
+// 用原子递增替代"读取-判断-写回"，避免并发下多个请求读到同一旧值导致计数丢失、
+// 实际放行量超过上限。go-cache 的 IncrementInt 在内部持锁完成读改写，且只改值不动 TTL。
 func allowAuthRateLimitedCheck() bool {
-	if count, ok := singleton.Cache.Get(authRateLimit1sKey); ok {
-		if c, ok := count.(int); ok && c >= authRateLimit1sMax {
-			return false
-		}
+	if incrementAuthRateLimit(authRateLimit1sKey, time.Second) > authRateLimit1sMax {
+		return false
 	}
-	if count, ok := singleton.Cache.Get(authRateLimit1mKey); ok {
-		if c, ok := count.(int); ok && c >= authRateLimit1mMax {
-			return false
-		}
+	if incrementAuthRateLimit(authRateLimit30sKey, 30*time.Second) > authRateLimit30sMax {
+		return false
 	}
-
-	incrementAuthRateLimit(authRateLimit1sKey, time.Second)
-	incrementAuthRateLimit(authRateLimit1mKey, time.Minute)
 	return true
 }
 
-func incrementAuthRateLimit(key string, window time.Duration) {
-	count, _ := singleton.Cache.Get(key)
-	if c, ok := count.(int); ok {
-		singleton.Cache.Set(key, c+1, window)
-		return
+// incrementAuthRateLimit 原子地将窗口计数 +1 并返回新值。固定窗口语义：已有键的递增不刷新
+// TTL，窗口随首个请求起点到期后重置。Add 与 IncrementInt 均为 go-cache 内部持锁的原子操作，
+// 通过 Add 优先处理"窗口首个请求"的初始化，彻底消除并发首请求初始化/递增之间的竞争窗口。
+func incrementAuthRateLimit(key string, window time.Duration) int {
+	for {
+		// 窗口首个请求：原子地把键初始化为 1 并设置 TTL。已存在（未过期）则返回 error。
+		if err := singleton.Cache.Add(key, 1, window); err == nil {
+			return 1
+		}
+		// 键已存在：原子递增并取新值。若键恰在 Add 与递增之间过期被清除，IncrementInt 报错，
+		// 回到 Add 重新作为新窗口起点。
+		if n, err := singleton.Cache.IncrementInt(key, 1); err == nil {
+			return n
+		}
 	}
-	singleton.Cache.Set(key, 1, window)
 }
 
 // 增加失败计数并设置 10 分钟过期
@@ -461,6 +480,15 @@ func (oa *oauth2controller) login(c *gin.Context) {
 		}, true)
 		return
 	}
+	if !allowAuthRateLimitedCheck() {
+		mygin.ShowErrorPage(c, mygin.ErrInfo{
+			Code:  http.StatusTooManyRequests,
+			Title: "登录失败",
+			Msg:   "请求过于频繁，请稍后再试",
+		}, true)
+		return
+	}
+
 	randomString, err := utils.GenerateRandomString(32)
 	if err != nil {
 		mygin.ShowErrorPage(c, mygin.ErrInfo{
@@ -471,7 +499,13 @@ func (oa *oauth2controller) login(c *gin.Context) {
 		return
 	}
 	state, stateKey := randomString[:16], randomString[16:]
-	singleton.Cache.Set(fmt.Sprintf("%s%s", model.CacheKeyOauth2State, stateKey), state, cache.DefaultExpiration)
+	// 将发起请求的 Host 与 state 绑定存储，供回调时校验两次 Host 一致。
+	// state 在回调成功校验后即删除（一次性消费）。这是针对 CVE-2026-53523
+	// （redirect_uri 可被 Host 头注入）的缓解：当受害者浏览器曾以真实域名访问过
+	// 本服务、而攻击者回调时使用伪造 Host 时，两次 Host 失配会被拦截。
+	// 注意：若攻击者全程自行发起并回调（受害者不经过本服务），两次 Host 可同为伪造值，
+	// 此校验无法覆盖，仍需反代规范化 Host 或固定可信回调域名作为根本防御。
+	singleton.Cache.Set(fmt.Sprintf("%s%s", model.CacheKeyOauth2State, stateKey), state+"|"+c.Request.Host, cache.DefaultExpiration)
 	url := oa.getCommonOauth2Config(c).AuthCodeURL(state, oauth2.AccessTypeOnline)
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(singleton.Conf.Site.CookieName+"-sk", stateKey, 60*5, "/", "", mygin.CookieSecure(c), true)
@@ -501,8 +535,10 @@ func (oa *oauth2controller) callback(c *gin.Context) {
 	if err == nil {
 		cacheKey := fmt.Sprintf("%s%s", model.CacheKeyOauth2State, stateKey)
 		state, ok := singleton.Cache.Get(cacheKey)
-		cachedState, _ := state.(string)
-		if !ok || cachedState == "" || cachedState != stateParam {
+		cachedValue, _ := state.(string)
+		// 拆分为 state|host，校验 state 匹配且当前请求 Host 与发起时一致（见 login 处注释）。
+		cachedState, cachedHost, _ := strings.Cut(cachedValue, "|")
+		if !ok || cachedState == "" || cachedState != stateParam || cachedHost == "" || cachedHost != c.Request.Host {
 			err = errors.New("非法的登录方式")
 		} else {
 			singleton.Cache.Delete(cacheKey)
@@ -620,6 +656,44 @@ func (oa *oauth2controller) callback(c *gin.Context) {
 		return
 	}
 	user.SuperAdmin = true
+	if singleton.Conf.TwoFactorActive() {
+		oa.beginTwoFactor(c, user, twoFactorLoginMethodOAuth)
+		return
+	}
+	oa.issueOAuthSession(c, &user)
+}
+
+// beginTwoFactor 为已通过第一阶段身份核验的用户签发一次性二次验证 ticket。
+func (oa *oauth2controller) beginTwoFactor(c *gin.Context, user model.User, method twoFactorLoginMethod) {
+	ticket, err := utils.GenerateRandomString(48)
+	if err != nil {
+		mygin.ShowErrorPage(c, mygin.ErrInfo{
+			Code:  http.StatusBadRequest,
+			Title: "Something wrong",
+			Msg:   err.Error(),
+		}, true)
+		return
+	}
+	singleton.Cache.Set(twoFactorCachePrefix+ticket, &twoFactorTicket{
+		User:   user,
+		Method: method,
+	}, twoFactorTTL)
+	oa.renderTwoFactor(c, http.StatusOK, ticket, "")
+}
+
+// renderTwoFactor 使用默认登录页的第二阶段状态展示二次验证。
+// 自定义主题不一定支持该状态，因此这里固定复用内置登录模板。
+func (oa *oauth2controller) renderTwoFactor(c *gin.Context, status int, ticket, errorMessage string) {
+	c.HTML(status, "dashboard-default/login", mygin.CommonEnvironment(c, gin.H{
+		"Title":             "二次验证",
+		"SecondFactorMode":  true,
+		"SecondFactorError": errorMessage,
+		"Ticket":            ticket,
+	}))
+}
+
+// issueOAuthSession 为已通过全部校验的 OAuth 用户发放会话并跳转首页。
+func (oa *oauth2controller) issueOAuthSession(c *gin.Context, user *model.User) {
 	sessionToken, err := utils.NewSessionToken()
 	if err != nil {
 		mygin.ShowErrorPage(c, mygin.ErrInfo{
@@ -631,7 +705,7 @@ func (oa *oauth2controller) callback(c *gin.Context) {
 	}
 	user.Token = sessionToken.Hash
 	user.TokenExpired = time.Now().UTC().AddDate(0, 2, 0)
-	singleton.DB.Save(&user)
+	singleton.DB.Save(user)
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(singleton.Conf.Site.CookieName, sessionToken.Plain, 60*60*24*3, "/", "", mygin.CookieSecure(c), true)
 	mygin.SetCSRFCookie(c)
@@ -639,6 +713,79 @@ func (oa *oauth2controller) callback(c *gin.Context) {
 		"URL": "/",
 	}))
 	audit.Record(c, audit.TypeAuth, "OAuth login succeeded", "user: "+user.Login)
+}
+
+// twoFactorVerify 校验密码和 OAuth 登录共用的二次验证 ticket。
+func (oa *oauth2controller) twoFactorVerify(c *gin.Context) {
+	if !singleton.Conf.TwoFactorActive() {
+		mygin.ShowErrorPage(c, mygin.ErrInfo{
+			Code:  http.StatusForbidden,
+			Title: "登录失败",
+			Msg:   "不支持的登陆方式",
+		}, true)
+		return
+	}
+	if !allowAuthRateLimitedCheck() {
+		oa.renderTwoFactor(c, http.StatusTooManyRequests, strings.TrimSpace(c.PostForm("ticket")), "请求过于频繁，请稍后再试")
+		return
+	}
+
+	ticket := strings.TrimSpace(c.PostForm("ticket"))
+	code := strings.TrimSpace(c.PostForm("otp"))
+	if ticket == "" || code == "" {
+		oa.renderTwoFactor(c, http.StatusBadRequest, "", "登录会话无效，请重新登录")
+		return
+	}
+
+	cacheKey := twoFactorCachePrefix + ticket
+	twoFactorMu.Lock()
+	value, ok := singleton.Cache.Get(cacheKey)
+	t, isTicket := value.(*twoFactorTicket)
+	if !ok || !isTicket {
+		twoFactorMu.Unlock()
+		audit.Record(c, audit.TypeAuth, "Two-factor login failed", "invalid or expired ticket")
+		oa.renderTwoFactor(c, http.StatusBadRequest, "", "登录会话已过期，请重新登录")
+		return
+	}
+
+	// TOTP 校验；同一 ticket 限制试错次数，防 6 位码枚举。
+	if !totp.Validate(singleton.Conf.Site.TwoFactorSecret, code, 1) {
+		t.Attempts++
+		if t.Attempts >= twoFactorMaxAttempts {
+			singleton.Cache.Delete(cacheKey)
+			twoFactorMu.Unlock()
+			audit.Record(c, audit.TypeAuth, "Two-factor login failed", "too many invalid codes, ticket revoked, user: "+t.User.Login)
+			oa.renderTwoFactor(c, http.StatusBadRequest, "", "连续错误次数过多，请重新登录")
+			return
+		}
+		singleton.Cache.Set(cacheKey, t, twoFactorTTL)
+		twoFactorMu.Unlock()
+		audit.Record(c, audit.TypeAuth, "Two-factor login failed", "invalid two-factor code, user: "+t.User.Login)
+		oa.renderTwoFactor(c, http.StatusBadRequest, ticket, "动态验证码错误，请重新输入")
+		return
+	}
+
+	// 校验通过：立即作废 ticket（一次性消费），发放会话。
+	singleton.Cache.Delete(cacheKey)
+	verifiedTicket := *t
+	twoFactorMu.Unlock()
+	audit.Record(c, audit.TypeAuth, "Two-factor login passed", "user: "+verifiedTicket.User.Login)
+	switch verifiedTicket.Method {
+	case twoFactorLoginMethodPassword:
+		if !singleton.Conf.PasswordLoginActive() {
+			oa.renderTwoFactor(c, http.StatusForbidden, "", "密码登录已被禁用，请重新登录")
+			return
+		}
+		oa.issuePasswordSession(c, &verifiedTicket.User)
+	case twoFactorLoginMethodOAuth:
+		if singleton.Conf.Oauth2.DisableOauthLogin {
+			oa.renderTwoFactor(c, http.StatusForbidden, "", "OAuth 登录已被禁用，请重新登录")
+			return
+		}
+		oa.issueOAuthSession(c, &verifiedTicket.User)
+	default:
+		oa.renderTwoFactor(c, http.StatusBadRequest, "", "登录会话无效，请重新登录")
+	}
 }
 
 func removeDuplicates(elements []string) []string {

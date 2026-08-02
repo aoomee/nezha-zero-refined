@@ -134,6 +134,7 @@ func ServeMultiplex(port uint, httpHandler http.Handler) error {
 		Handler:           h2c.NewHandler(multiplexHandler, &http2.Server{}),
 		Addr:              fmt.Sprintf(":%d", port),
 		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 	multiplexHTTPServer = httpServer
 
@@ -197,7 +198,10 @@ func DispatchTask(serviceSentinelDispatchBus <-chan model.Monitor) {
 			go func(server *model.Server) {
 				dispatchLock.Lock()
 				defer dispatchLock.Unlock()
-				_ = server.SendTask(monitorTask)
+				singleton.AuthorizeTaskResult(server.ID, monitorTask.GetType(), monitorTask.GetId(), 5*time.Minute)
+				if err := server.SendTask(monitorTask); err != nil {
+					singleton.RevokeTaskResultAuthorization(server.ID, monitorTask.GetType(), monitorTask.GetId())
+				}
 			}(server)
 		}
 	}

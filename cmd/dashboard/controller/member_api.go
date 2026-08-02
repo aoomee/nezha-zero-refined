@@ -1353,10 +1353,6 @@ func (ma *memberAPI) updateSetting(c *gin.Context) {
 
 	oldConf := *singleton.Conf
 
-	if disablePasswordLogin {
-		singleton.Conf.Site.TwoFactorSecret = ""
-	}
-
 	singleton.Conf.Language = sf.Language
 	singleton.Conf.UseExternalGeoIP = sf.UseExternalGeoIP == "on"
 	singleton.Conf.EnableIPChangeNotification = sf.EnableIPChangeNotification == "on"
@@ -1440,7 +1436,6 @@ func (ma *memberAPI) updateSetting(c *gin.Context) {
 		IgnoredIPNotification:           sf.IgnoredIPNotification,
 		IPChangeNotificationTag:         singleton.Conf.IPChangeNotificationTag,
 		PasswordChanged:                 passwordChanged,
-		TwoFactorCleared:                disablePasswordLogin && oldConf.Site.TwoFactorSecret != "",
 	}
 	if detail := audit.BuildSecuritySettingDetail(&oldConf, settingIn); detail != "" {
 		audit.Record(c, audit.TypeSecurity, "Security settings updated", detail)
@@ -1520,10 +1515,10 @@ func (ma *memberAPI) totp(c *gin.Context) {
 
 	switch req.Operation {
 	case "bind":
-		if !singleton.Conf.PasswordLoginActive() {
+		if !singleton.Conf.LoginAvailable() {
 			c.JSON(http.StatusOK, model.Response{
 				Code:    http.StatusBadRequest,
-				Message: "请先启用密码登录",
+				Message: "请先启用至少一种登录方式",
 			})
 			return
 		}
@@ -1574,10 +1569,10 @@ func (ma *memberAPI) totp(c *gin.Context) {
 		})
 
 	case "confirm":
-		if !singleton.Conf.PasswordLoginActive() {
+		if !singleton.Conf.LoginAvailable() {
 			c.JSON(http.StatusOK, model.Response{
 				Code:    http.StatusBadRequest,
-				Message: "请先启用密码登录",
+				Message: "请先启用至少一种登录方式",
 			})
 			return
 		}
@@ -1639,6 +1634,23 @@ func (ma *memberAPI) totp(c *gin.Context) {
 			c.JSON(http.StatusOK, model.Response{
 				Code:    http.StatusBadRequest,
 				Message: "双重验证未启用",
+			})
+			return
+		}
+		// 关闭二次验证需先用当前 TOTP 码二次确认（修复会话被盗即可直接关闭 2FA 的缺口）。
+		// 与开启时的 confirm 一致，要求输入当前有效的双重验证码。
+		if req.Code == "" {
+			c.JSON(http.StatusOK, model.Response{
+				Code:    http.StatusBadRequest,
+				Message: "请输入当前双重验证码",
+			})
+			return
+		}
+		if !totp.Validate(singleton.Conf.Site.TwoFactorSecret, req.Code, 1) {
+			audit.Record(c, audit.TypeSecurity, "Two-factor disable failed", "invalid two-factor code on unbind")
+			c.JSON(http.StatusOK, model.Response{
+				Code:    http.StatusBadRequest,
+				Message: "双重验证码错误，请重试",
 			})
 			return
 		}
