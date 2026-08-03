@@ -10,6 +10,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 
 	"github.com/railzen/nezha-zero/model"
+	"github.com/railzen/nezha-zero/pkg/audit"
 )
 
 const (
@@ -201,19 +202,26 @@ func collectCycleTransferQueries() []cycleTransferQuery {
 	return queries
 }
 
-func fetchCycleTransferFromDB(queries []cycleTransferQuery) map[model.CycleTransferDBKey]float64 {
+func fetchCycleTransferFromDB(queries []cycleTransferQuery) (map[model.CycleTransferDBKey]float64, map[model.CycleTransferDBKey]struct{}) {
 	if len(queries) == 0 {
-		return nil
+		return nil, nil
 	}
 	out := make(map[model.CycleTransferDBKey]float64, len(queries))
+	failed := make(map[model.CycleTransferDBKey]struct{})
 	for _, q := range queries {
 		var res model.NResult
-		DB.Model(&model.Transfer{}).Select(q.sel).
+		if err := DB.Model(&model.Transfer{}).Select(q.sel).
 			Where("datetime(`created_at`) >= datetime(?) AND server_id = ?", q.since, q.key.ServerID).
-			Scan(&res)
+			Scan(&res).Error; err != nil {
+			failed[q.key] = struct{}{}
+			audit.Record(nil, audit.TypeEvent, "Cycle transfer query failed",
+				fmt.Sprintf("alert: %d, rule: %d, server: %d, since: %s, error: %v",
+					q.key.AlertID, q.key.RuleIdx, q.key.ServerID, q.since.Format(time.RFC3339), err))
+			continue
+		}
 		out[q.key] = float64(res.N)
 	}
-	return out
+	return out, failed
 }
 
 // checkStatus 检查报警规则并发送报警
@@ -226,7 +234,7 @@ func checkStatus() {
 	AlertsLock.Unlock()
 	ServerLock.RUnlock()
 
-	cycleFromDB := fetchCycleTransferFromDB(queries)
+	cycleFromDB, failedCycleQueries := fetchCycleTransferFromDB(queries)
 
 	ServerLock.RLock()
 	defer ServerLock.RUnlock()
@@ -241,7 +249,7 @@ func checkStatus() {
 		for _, server := range ServerList {
 			// 监测点
 			alertsStore[alert.ID][server.ID] = append(alertsStore[alert.
-				ID][server.ID], alert.Snapshot(AlertsCycleTransferStatsStore[alert.ID], server, cycleFromDB))
+				ID][server.ID], alert.Snapshot(AlertsCycleTransferStatsStore[alert.ID], server, cycleFromDB, failedCycleQueries))
 			// 发送通知，分为触发报警和恢复通知
 			_, passed := alert.Check(alertsStore[alert.ID][server.ID])
 			// 保存当前服务器状态信息
