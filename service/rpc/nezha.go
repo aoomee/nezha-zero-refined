@@ -342,7 +342,7 @@ func (s *NezhaHandler) ReportSystemState(c context.Context, r *pb.State) (*pb.Re
 	server.State = &state
 
 	// 应对 dashboard 重启的情况，如果从未记录过，先打点，等到小时时间点时入库
-	if server.PrevTransferInSnapshot == 0 || server.PrevTransferOutSnapshot == 0 {
+	if server.PrevTransferInSnapshot == 0 && server.PrevTransferOutSnapshot == 0 {
 		server.PrevTransferInSnapshot = int64(state.NetInTransfer)
 		server.PrevTransferOutSnapshot = int64(state.NetOutTransfer)
 	}
