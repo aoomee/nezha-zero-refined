@@ -120,12 +120,18 @@ func (r *AlertRule) ExpirationServerIDs() string {
 
 // Snapshot 对传入的Server进行该报警规则下所有type的检查 返回包含每项检查结果的空接口。
 // cycleFromDB 为锁外预查的周期流量合计，key 见 CycleTransferDBKey；无预查时传 nil。
-func (r *AlertRule) Snapshot(cycleTransferStats *CycleTransferStats, server *Server, cycleFromDB map[CycleTransferDBKey]float64) []interface{} {
+// failedCycleQueries 中的规则沿用上次状态，不更新周期流量缓存和下次查询时间。
+func (r *AlertRule) Snapshot(cycleTransferStats *CycleTransferStats, server *Server, cycleFromDB map[CycleTransferDBKey]float64, failedCycleQueries map[CycleTransferDBKey]struct{}) []interface{} {
 	var point []interface{}
 	for i := 0; i < len(r.Rules); i++ {
+		key := CycleTransferDBKey{AlertID: r.ID, RuleIdx: i, ServerID: server.ID}
+		if _, failed := failedCycleQueries[key]; failed {
+			point = append(point, r.Rules[i].LastCycleStatus[server.ID])
+			continue
+		}
 		var fromDB float64
 		if cycleFromDB != nil {
-			fromDB = cycleFromDB[CycleTransferDBKey{AlertID: r.ID, RuleIdx: i, ServerID: server.ID}]
+			fromDB = cycleFromDB[key]
 		}
 		point = append(point, r.Rules[i].Snapshot(cycleTransferStats, server, fromDB))
 	}
